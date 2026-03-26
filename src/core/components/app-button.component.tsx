@@ -63,7 +63,7 @@ export const AppButton = ({
   // Determine label colour based on variant and state.
   const labelStyles = [
     styles.label,
-    { color: colors.textPrimary },
+    { color: colors.textOnPrimary },
     variant === 'secondary' && { color: colors.primary },
     variant === 'ghost' && { color: colors.textSecondary },
     (disabled || loading) && { color: colors.textSecondary },
@@ -79,8 +79,9 @@ export const AppButton = ({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? colors.textPrimary : colors.primary}
-          size="small"
+// textOnPrimary ensures readable text on the primary green button
+// in both dark mode (dark text) and light mode (white text).
+color={variant === 'primary' ? colors.textOnPrimary : colors.primary}          size="small"
         />
       ) : (
         <Text style={labelStyles as any}>{label}</Text>
