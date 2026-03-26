@@ -31,6 +31,8 @@ import { AppText } from '../../../core/components/app-text.component';
 import { AppButton } from '../../../core/components/app-button.component';
 import { THEME } from '../../../core/theme/theme.config';
 import { TTT_CONFIG } from '../config/game.config';
+import { useTheme } from '../../../core/theme/theme.context';
+
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'TicTacToe'>;
 type RoutePropType = RouteProp<RootStackParamList, 'TicTacToe'>;
@@ -41,14 +43,15 @@ export const GameScreen = () => {
   // useRoute gives us the parameters passed when navigating to this screen.
   // Angular equivalent: ActivatedRoute.snapshot.params
   const route = useRoute<RoutePropType>();
+  const { colors } = useTheme();
 
   // Extract playerName and playerAvatar from route params.
   const { playerName, playerAvatar } = route.params;
 
   // Create the player and bot objects using the factory functions.
   // These are created once — they never change during a game session.
-  const player1 = createGuestPlayer1(playerName, playerAvatar);
-  const player2 = createBotPlayer();
+  const player1 = createGuestPlayer1(playerName, playerAvatar, colors.player1);
+  const player2 = createBotPlayer(colors.botColor);
 
   // useSettings gives us the current app settings.
   // Angular equivalent: injecting SettingsService.
@@ -140,10 +143,9 @@ export const GameScreen = () => {
             onPress={() => navigation.goBack()}
             variant="ghost"
             style={styles.backButton}
-            labelStyle={styles.backLabel}
           />
           {/* Game title */}
-          <AppText variant="h3" style={styles.gameTitle}>
+          <AppText variant="h3" style={{ color: colors.primary }}>
             {TTT_CONFIG.name}
           </AppText>
           {/* Placeholder to balance the header flex layout */}
@@ -185,11 +187,9 @@ export const GameScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
   },
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -198,13 +198,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: THEME.spacing.md,
     paddingVertical: THEME.spacing.sm,
   },
-  gameTitle: {
-    color: THEME.colors.primary,
-  },
   backButton: {
     minWidth: 70,
-  },
-  backLabel: {
-    fontSize: THEME.fontSizes.sm,
   },
 });

@@ -1,8 +1,9 @@
 // ============================================================
 // settings.screen.tsx
-// Global settings page for the entire app.
-// Phase 1: Steal Cells toggle and Time Limit toggle.
-// More settings added here in future phases.
+// Global settings — theme toggle, game rules.
+// Theme toggle is fully functional and persists.
+// Angular equivalent: SettingsComponent injecting
+// SettingsService and ThemeService.
 // ============================================================
 
 import React from 'react';
@@ -11,68 +12,77 @@ import { useNavigation } from '@react-navigation/native';
 import { AppText } from '../core/components/app-text.component';
 import { AppButton } from '../core/components/app-button.component';
 import { useSettings } from '../core/hooks/settings.hook';
+import { useTheme } from '../core/theme/theme.context';
 import { THEME } from '../core/theme/theme.config';
 
 export const SettingsScreen = () => {
   const navigation = useNavigation();
-
-  // useSettings gives us the current settings and the update function.
-  // Angular equivalent: injecting SettingsService and subscribing to settings$.
   const { settings, isLoading, updateGameRules } = useSettings();
 
-  // Show nothing while settings are loading from AsyncStorage.
+  // useTheme provides colors for styling AND toggleTheme for the switch.
+  const { colors, themeMode, toggleTheme } = useTheme();
+
   if (isLoading) return null;
 
   return (
-    <View style={styles.container}>
-      <AppText variant="h2" style={styles.title}>Settings</AppText>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
 
-      {/* ── GAME RULES SECTION ── */}
-      <AppText variant="h3" style={styles.sectionTitle}>Game Rules</AppText>
+      <AppText variant="h2" style={{ color: colors.primary }}>Settings</AppText>
+
+      {/* ── APPEARANCE ── */}
+      <AppText variant="h3" style={[styles.sectionTitle, { color: colors.textSecondary }] as any}>
+        Appearance
+      </AppText>
+
+      {/* Dark Mode toggle */}
+      <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
+        <View style={styles.settingInfo}>
+          <AppText variant="body">Dark Mode</AppText>
+          <AppText variant="caption">Switch between dark and light theme</AppText>
+        </View>
+        <Switch
+          value={themeMode === 'dark'}
+          onValueChange={toggleTheme}
+          trackColor={{ false: colors.disabled, true: colors.primary }}
+          thumbColor={colors.textPrimary}
+        />
+      </View>
+
+      {/* ── GAME RULES ── */}
+      <AppText variant="h3" style={[styles.sectionTitle, { color: colors.textSecondary }] as any}>
+        Game Rules
+      </AppText>
 
       {/* Steal Cells toggle */}
-      <View style={styles.settingRow}>
+      <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
         <View style={styles.settingInfo}>
           <AppText variant="body">Steal Cells</AppText>
           <AppText variant="caption">
             Claim an opponent's cell with a different correct answer
           </AppText>
         </View>
-        {/* Switch is React Native's toggle component.
-            Angular equivalent: a mat-slide-toggle or custom toggle component. */}
         <Switch
           value={settings.gameRules.stealCells}
-          // onValueChange is called with the NEW value when toggled.
-          // Angular equivalent: (change)="onStealCellsToggle($event)"
           onValueChange={(value) => updateGameRules({ stealCells: value })}
-          trackColor={{
-            false: THEME.colors.disabled,
-            true: THEME.colors.primary,
-          }}
-          thumbColor={THEME.colors.textPrimary}
+          trackColor={{ false: colors.disabled, true: colors.primary }}
+          thumbColor={colors.textPrimary}
         />
       </View>
 
       {/* Time Limit toggle */}
-      <View style={styles.settingRow}>
+      <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
         <View style={styles.settingInfo}>
           <AppText variant="body">Time Limit</AppText>
-          <AppText variant="caption">
-            45 seconds to answer per turn
-          </AppText>
+          <AppText variant="caption">45 seconds to answer per turn</AppText>
         </View>
         <Switch
           value={settings.gameRules.timeLimitEnabled}
           onValueChange={(value) => updateGameRules({ timeLimitEnabled: value })}
-          trackColor={{
-            false: THEME.colors.disabled,
-            true: THEME.colors.primary,
-          }}
-          thumbColor={THEME.colors.textPrimary}
+          trackColor={{ false: colors.disabled, true: colors.primary }}
+          thumbColor={colors.textPrimary}
         />
       </View>
 
-      {/* Back button */}
       <AppButton
         label="Back"
         onPress={() => navigation.goBack()}
@@ -87,17 +97,11 @@ export const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
     paddingHorizontal: THEME.spacing.xl,
     paddingTop: THEME.spacing.xxl,
     gap: THEME.spacing.md,
   },
-  title: {
-    color: THEME.colors.primary,
-    marginBottom: THEME.spacing.sm,
-  },
   sectionTitle: {
-    color: THEME.colors.textSecondary,
     marginTop: THEME.spacing.md,
   },
   settingRow: {
@@ -106,7 +110,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: THEME.spacing.sm,
     borderBottomWidth: 0.5,
-    borderBottomColor: THEME.colors.border,
   },
   settingInfo: {
     flex: 1,

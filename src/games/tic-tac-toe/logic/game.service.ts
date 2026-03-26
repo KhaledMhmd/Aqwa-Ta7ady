@@ -56,27 +56,29 @@ export const createInitialBoard = (): CellState[][] => {
 // Angular equivalent: a factory method in a PlayerService.
 export const createGuestPlayer1 = (
   name: string,   // The name the player typed on the setup screen.
-  avatar: string  // The emoji the player chose on the setup screen.
+  avatar: string,
+  color: string  // The emoji the player chose on the setup screen.
 ): import('../../../core/types/player.types').GuestPlayer => ({
   type: 'guest',
   id: 'player1',
   name,
   avatar,
   // Player 1 always uses the player1 colour from the theme.
-  color: THEME.colors.player1,
+  color,
 });
 
 // Creates the BotPlayer object for the CPU opponent.
 // Called from the game screen when vs-bot mode is selected.
 // Angular equivalent: a factory method in a BotService.
-export const createBotPlayer = (): BotPlayer => ({
+export const createBotPlayer = (
+  // color comes from THEME.colors.botColor in the screen component.
+  color: string,
+): BotPlayer => ({
   type: 'bot',
   id: 'player2',
-  // Bot name comes from APP_CONFIG so changing it there
-  // automatically updates it everywhere in the app.
   name: APP_CONFIG.botName,
   avatar: TTT_CONFIG.botAvatar,
-  color: THEME.colors.botColor,
+  color, // dynamic — comes from the active theme
   difficulty: TTT_CONFIG.defaultBotDifficulty,
 });
 

@@ -1,34 +1,24 @@
 // ============================================================
 // app.config.ts
 // THE single source of truth for app-wide constants.
-// If you want to rename the app, change it HERE and nowhere else.
-// If you want to bump the version, change it HERE.
-// Angular equivalent: environment.ts + a constants file combined.
+// Change app name, version, or bot name here only.
+// Angular equivalent: environment.ts + a constants file.
 // ============================================================
 
 export const APP_CONFIG = {
-
-  // The display name of the app — shown on the home screen header
-  // and anywhere the app name appears in the UI.
-  // Change this one string to rename the app everywhere instantly.
+  // Display name of the app — shown everywhere in the UI.
   name: 'Aqwa Ta7ady',
 
-  // The internal version of the app.
-  // Update this every time you ship a new version to the app stores.
+  // Internal version — update when shipping to app stores.
   version: '1.0.0',
 
-  // The tagline shown on the splash screen and auth screen.
+  // Tagline shown on splash and auth screens.
   tagline: 'The Ultimate Football Challenge',
 
-  // The name used for the Bot opponent throughout all games.
-  // Change this one string to rename the bot everywhere instantly.
+  // Name of the CPU opponent — shown on turn indicator and result screen.
   botName: 'Bot',
 
-  // Maximum number of players in a local (same device) game.
-  // Used by the game select screen to know how many player slots to show.
+  // Maximum players in a local game.
   maxLocalPlayers: 2,
 
 } as const;
-// 'as const' makes every value in this object readonly —
-// nothing in the app can accidentally overwrite APP_CONFIG.name etc.
-// Angular equivalent: Object.freeze() on a constants object.

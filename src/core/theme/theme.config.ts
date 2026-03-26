@@ -1,101 +1,127 @@
 // ============================================================
 // theme.config.ts
-// THE single source of truth for all visual design tokens.
-// Every colour, font size, border radius, and spacing value
-// in the entire app comes from here.
-// Want to rebrand the app? Edit this file only.
-// Angular equivalent: a global SCSS variables file (_variables.scss).
+// Contains DARK_THEME and LIGHT_THEME colour palettes.
+// THEME is the combined object every component imports —
+// it has colors, spacing, fontSizes, fontWeights, borderRadius.
+// Components use useTheme() to get dynamic colors.
+// They use THEME.spacing, THEME.fontSizes etc for static values
+// that never change between themes.
+// Angular equivalent: SCSS variables file with theme maps.
 // ============================================================
 
+// ColorPalette defines the required shape of every theme.
+// Both DARK_THEME and LIGHT_THEME must satisfy this type.
+type ColorPalette = {
+  primary: string;
+  primaryDark: string;
+  secondary: string;
+  background: string;
+  surface: string;
+  surfaceLight: string;
+  textPrimary: string;
+  textSecondary: string;
+  textDark: string;
+  player1: string;
+  player2: string;
+  botColor: string;
+  success: string;
+  error: string;
+  warning: string;
+  disabled: string;
+  border: string;
+  borderLight: string;
+  comingSoon: string;
+    modalOverlay: string;  // Semi-transparent overlay behind modals.
+
+};
+
+// DARK_THEME — default Phase 1 theme.
+// Update these hex values when Stitch dark design is shared.
+export const DARK_THEME: ColorPalette = {
+  primary: '#E63946',
+  primaryDark: '#C1121F',
+  secondary: '#1D3557',
+  background: '#0D1B2A',
+  surface: '#1B2838',
+  surfaceLight: '#253545',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#A8B2C1',
+  textDark: '#0D1B2A',
+  player1: '#E63946',
+  player2: '#457B9D',
+  botColor: '#2EC4B6',
+  success: '#2EC4B6',
+  error: '#E63946',
+  warning: '#F4A261',
+  disabled: '#3D4F61',
+  border: '#253545',
+  borderLight: '#3D4F61',
+  comingSoon: 'rgba(0,0,0,0.6)',
+  modalOverlay: 'rgba(0,0,0,0.7)', // Darker overlay for modals on dark bg.
+};
+
+// LIGHT_THEME — placeholder values.
+// Update these hex values when Stitch light design is shared.
+export const LIGHT_THEME: ColorPalette = {
+  primary: '#E63946',
+  primaryDark: '#C1121F',
+  secondary: '#1D3557',
+  background: '#F8F9FA',
+  surface: '#FFFFFF',
+  surfaceLight: '#F1F3F5',
+  textPrimary: '#0D1B2A',
+  textSecondary: '#6C757D',
+  textDark: '#0D1B2A',
+  player1: '#E63946',
+  player2: '#457B9D',
+  botColor: '#2EC4B6',
+  success: '#2EC4B6',
+  error: '#E63946',
+  warning: '#F4A261',
+  disabled: '#CED4DA',
+  border: '#DEE2E6',
+  borderLight: '#E9ECEF',
+  comingSoon: 'rgba(0,0,0,0.4)',
+  modalOverlay: 'rgba(0,0,0,0.5)', // Slightly lighter overlay on light bg.
+};
+
+// THEME is the static object every component imports.
+// colors is NOT included here — components get colors via useTheme().
+// Only static values that never change between themes live here.
+// Angular equivalent: static SCSS variables that do not change with theme.
 export const THEME = {
-
-  // ----------------------------------------------------------
-  // COLOURS
-  // ----------------------------------------------------------
-  colors: {
-
-    // Primary brand colours
-    primary: '#E63946',       // Main red — used for buttons, highlights, active states
-    primaryDark: '#C1121F',   // Darker red — used for pressed button states
-    secondary: '#1D3557',     // Dark navy — used for backgrounds and cards
-
-    // Background colours
-    background: '#0D1B2A',    // Main app background — very dark navy
-    surface: '#1B2838',       // Card/surface background — slightly lighter than background
-    surfaceLight: '#253545',  // Lighter surface — used for input fields and inactive cells
-
-    // Text colours
-    textPrimary: '#FFFFFF',   // Main text — white on dark backgrounds
-    textSecondary: '#A8B2C1', // Muted text — labels, hints, secondary info
-    textDark: '#0D1B2A',      // Dark text — used on light/coloured backgrounds
-
-    // Game-specific colours
-    player1: '#E63946',       // Player 1 colour — red (matches primary)
-    player2: '#457B9D',       // Player 2 colour — blue
-    botColor: '#2EC4B6',      // Bot colour — teal
-
-    // Status colours
-    success: '#2EC4B6',       // Correct answer — teal green
-    error: '#E63946',         // Wrong answer — red
-    warning: '#F4A261',       // Warning states — orange
-    disabled: '#3D4F61',      // Disabled buttons and cells — muted grey-blue
-
-    // Border colours
-    border: '#253545',        // Default border colour
-    borderLight: '#3D4F61',   // Lighter border for subtle separators
-
-    // Coming Soon overlay colour
-    comingSoon: 'rgba(0,0,0,0.6)', // Semi-transparent overlay for locked features
-
-  },
-
-  // ----------------------------------------------------------
-  // TYPOGRAPHY
-  // ----------------------------------------------------------
-  // Font sizes follow a scale — each step is meaningfully larger
-  // than the previous. Never use a font size that is not in this list.
+  // Typography scale — same for both themes.
   fontSizes: {
-    xs: 10,    // Tiny labels, badges
-    sm: 12,    // Secondary text, hints
-    md: 14,    // Body text, default
-    lg: 16,    // Slightly prominent text
-    xl: 20,    // Section headings
-    xxl: 26,   // Screen titles
-    xxxl: 36,  // Hero text, splash screen
+    xs: 10,
+    sm: 12,
+    md: 14,
+    lg: 16,
+    xl: 20,
+    xxl: 26,
+    xxxl: 36,
   },
 
-  // Font weights — only use these two values for consistency.
+  // Font weights — same for both themes.
   fontWeights: {
-    regular: '400' as const,  // Normal body text
-    bold: '700' as const,     // Headings, buttons, emphasis
+    regular: '400' as const,
+    bold: '700' as const,
   },
 
-  // ----------------------------------------------------------
-  // SPACING
-  // ----------------------------------------------------------
-  // All padding and margin values come from this scale.
-  // Using a fixed scale keeps spacing consistent everywhere.
-  // Angular equivalent: $spacing-* variables in SCSS.
+  // Spacing scale — same for both themes.
   spacing: {
-    xs: 4,    // Tiny gaps — between icon and label
-    sm: 8,    // Small padding — inside compact components
-    md: 16,   // Default padding — inside cards and buttons
-    lg: 24,   // Large padding — section spacing
-    xl: 32,   // Extra large — screen-level padding
-    xxl: 48,  // Hero spacing — splash screen elements
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 48,
   },
 
-  // ----------------------------------------------------------
-  // BORDER RADIUS
-  // ----------------------------------------------------------
-  // Consistent rounding across all components.
+  // Border radius scale — same for both themes.
   borderRadius: {
-    sm: 4,    // Subtle rounding — input fields
-    md: 8,    // Default rounding — buttons, cards
-    lg: 16,   // Prominent rounding — modals, bottom sheets
-    full: 999, // Fully round — avatars, pills, circular buttons
+    sm: 4,
+    md: 8,
+    lg: 16,
+    full: 999,
   },
-
 } as const;
-// 'as const' makes the entire theme object readonly.
-// No component can accidentally mutate theme values at runtime.
