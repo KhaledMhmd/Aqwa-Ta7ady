@@ -41,7 +41,7 @@ export const SplashScreen = () => {
       // This means pressing back on Auth does not go back to Splash.
       // Angular equivalent: this.router.navigate(['/auth'], { replaceUrl: true })
       navigation.replace('Auth');
-    }, 2000); // 2000 milliseconds = 2 seconds.
+    }, 12000); // 1000 milliseconds = 1 second.
 
     // Cleanup — cancel the timer if the component unmounts early.
     // Angular equivalent: ngOnDestroy() { clearTimeout(this.timer) }
