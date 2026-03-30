@@ -12,6 +12,7 @@ import { AppText } from '../../../core/components/app-text.component';
 import { AppAvatar } from '../../../core/components/app-avatar.component';
 import { useTheme } from '../../../core/theme/theme.context';
 import { THEME } from '../../../core/theme/theme.config';
+import { useLanguage } from '../../../core/i18n/language.context';
 
 type Props = {
   player1: Player;
@@ -27,6 +28,8 @@ export const TurnIndicator = ({
   isGameOver,
 }: Props) => {
   const { colors } = useTheme();
+  const { t } = useLanguage();
+
 
   // True if the given player is the active one.
   const isActive = (player: Player) => player.id === currentPlayer.id;
@@ -49,7 +52,7 @@ export const TurnIndicator = ({
         </AppText>
         {isActive(player1) && !isGameOver && (
           <AppText variant="label" style={{ color: colors.primary, fontWeight: THEME.fontWeights.bold }}>
-            Your turn
+            {t.game.yourTurn}
           </AppText>
         )}
       </View>
@@ -57,7 +60,7 @@ export const TurnIndicator = ({
       {/* Center VS / END */}
       <View style={styles.center}>
         <AppText variant="caption" style={{ color: colors.textSecondary, fontWeight: THEME.fontWeights.bold }}>
-          {isGameOver ? 'END' : 'VS'}
+          {isGameOver ? t.game.endLabel : t.game.vsLabel}
         </AppText>
       </View>
 
@@ -76,7 +79,7 @@ export const TurnIndicator = ({
         </AppText>
         {isActive(player2) && !isGameOver && (
           <AppText variant="label" style={{ color: colors.primary, fontWeight: THEME.fontWeights.bold }}>
-            {player2.type === 'bot' ? 'Thinking...' : 'Your turn'}
+            {player2.type === 'bot' ? t.game.thinking : t.game.yourTurn}
           </AppText>
         )}
       </View>

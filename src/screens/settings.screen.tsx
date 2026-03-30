@@ -14,10 +14,12 @@ import { AppButton } from '../core/components/app-button.component';
 import { useSettings } from '../core/hooks/settings.hook';
 import { useTheme } from '../core/theme/theme.context';
 import { THEME } from '../core/theme/theme.config';
+import { useLanguage } from '../core/i18n/language.context';
 
 export const SettingsScreen = () => {
   const navigation = useNavigation();
   const { settings, isLoading, updateGameRules } = useSettings();
+  const { t } = useLanguage();
 
   // useTheme provides colors for styling AND toggleTheme for the switch.
   const { colors, themeMode, toggleTheme } = useTheme();
@@ -27,18 +29,18 @@ export const SettingsScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
-      <AppText variant="h2" style={{ color: colors.primary }}>Settings</AppText>
+      <AppText variant="h2" style={{ color: colors.primary }}>{t.settings.title}</AppText>
 
       {/* ── APPEARANCE ── */}
       <AppText variant="h3" style={[styles.sectionTitle, { color: colors.textSecondary }] as any}>
-        Appearance
+        {t.settings.appearanceSection}
       </AppText>
 
       {/* Dark Mode toggle */}
       <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
         <View style={styles.settingInfo}>
-          <AppText variant="body">Dark Mode</AppText>
-          <AppText variant="caption">Switch between dark and light theme</AppText>
+          <AppText variant="body">{t.settings.darkMode}</AppText>
+          <AppText variant="caption">{t.settings.darkModeDesc}</AppText>
         </View>
         <Switch
           value={themeMode === 'dark'}
@@ -50,16 +52,14 @@ export const SettingsScreen = () => {
 
       {/* ── GAME RULES ── */}
       <AppText variant="h3" style={[styles.sectionTitle, { color: colors.textSecondary }] as any}>
-        Game Rules
+        {t.settings.gameRulesSection}
       </AppText>
 
       {/* Steal Cells toggle */}
       <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
         <View style={styles.settingInfo}>
-          <AppText variant="body">Steal Cells</AppText>
-          <AppText variant="caption">
-            Claim an opponent's cell with a different correct answer
-          </AppText>
+          <AppText variant="body">{t.settings.stealCells}</AppText>
+          <AppText variant="caption">{t.settings.stealCellsDesc}</AppText>
         </View>
         <Switch
           value={settings.gameRules.stealCells}
@@ -72,8 +72,8 @@ export const SettingsScreen = () => {
       {/* Time Limit toggle */}
       <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
         <View style={styles.settingInfo}>
-          <AppText variant="body">Time Limit</AppText>
-          <AppText variant="caption">45 seconds to answer per turn</AppText>
+          <AppText variant="body">{t.settings.timeLimit}</AppText>
+          <AppText variant="caption">{t.settings.timeLimitDesc}</AppText>
         </View>
         <Switch
           value={settings.gameRules.timeLimitEnabled}

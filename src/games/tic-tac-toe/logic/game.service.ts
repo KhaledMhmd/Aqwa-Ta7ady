@@ -1,284 +1,229 @@
 // ============================================================
 // game.service.ts
-// Contains ALL pure logic functions for tic-tac-toe.
-// "Pure" means: takes inputs → returns output → no side effects.
-// These functions never touch the UI, never update state,
-// never call AsyncStorage. They just calculate and return.
-// Angular equivalent: a class with @Injectable() that gets
-// injected into components via the constructor.
-// In React we just import and call these functions directly —
-// no injection system needed.
+// All pure logic functions for tic-tac-toe.
+// Pure = takes inputs, returns outputs, no side effects.
+// Never touches UI, state, or AsyncStorage.
+// Angular equivalent: @Injectable() GameService class.
 // ============================================================
 
-import { GameState, CellState, TurnState, CellQuestion } from '../types/game.types';
+import { GameState, CellState, TurnState, CellQuestion, AnswerResult } from '../types/game.types';
 import { Player, BotPlayer } from '../../../core/types/player.types';
 import { QUESTIONS, ROW_HEADERS, COL_HEADERS } from '../data/questions.data';
 import { TTT_CONFIG } from '../config/game.config';
 import { APP_CONFIG } from '../../../core/config/app.config';
-import { THEME } from '../../../core/theme/theme.config';
 
-// ============================================================
-// INITIAL STATE CREATORS
-// Functions that build fresh starting state objects.
-// Called once when the game starts and again on reset.
-// ============================================================
+// ── INITIAL STATE CREATORS ──────────────────────────────────
 
-// Creates one empty cell — used when building the initial board.
+// Creates one empty cell — called when building the initial board.
 // Returns a NEW object every time so cells never share memory.
-// Angular equivalent: a factory method that returns a new CellModel().
 export const createEmptyCell = (): CellState => ({
   claimedBy: null,    // Nobody owns this cell yet.
-  usedAnswer: null,   // No answer has been used for this cell yet.
+  usedAnswer: null,   // No answer has been used for this cell.
 });
 
-// Creates a fresh 3x3 board where every cell is empty.
-// Called in createInitialGameState() and in resetGame() in the hook.
-// Array(3) creates an array with 3 empty slots.
-// .fill(null) fills those slots so .map() can iterate over them.
-// .map(() => ...) replaces each slot with a fresh row of cells.
-// Angular equivalent: a method that returns a 2D array of new CellModel objects.
+// Creates a fresh 3x3 board with all empty cells.
+// Called in createInitialGameState() and resetGame().
 export const createInitialBoard = (): CellState[][] => {
   return Array(TTT_CONFIG.gridSize)
     .fill(null)
     .map(() =>
       Array(TTT_CONFIG.gridSize)
         .fill(null)
-        // createEmptyCell() is called for EACH cell individually
-        // so every cell is a separate object in memory.
-        // Without this, all cells in a row would point to the same
-        // object and changing one would change all of them.
         .map(() => createEmptyCell())
     );
 };
 
-// Creates the GuestPlayer object for player 1.
-// Called from the player setup screen when the game starts.
-// Angular equivalent: a factory method in a PlayerService.
+// Creates a GuestPlayer for player 1.
+// color is passed in from the screen via useTheme()
+// so it always matches the active theme — never hardcoded here.
 export const createGuestPlayer1 = (
-  name: string,   // The name the player typed on the setup screen.
+  name: string,
   avatar: string,
-  color: string  // The emoji the player chose on the setup screen.
+  color: string,
 ): import('../../../core/types/player.types').GuestPlayer => ({
   type: 'guest',
   id: 'player1',
   name,
   avatar,
-  // Player 1 always uses the player1 colour from the theme.
   color,
 });
 
-// Creates the BotPlayer object for the CPU opponent.
-// Called from the game screen when vs-bot mode is selected.
-// Angular equivalent: a factory method in a BotService.
-export const createBotPlayer = (
-  // color comes from THEME.colors.botColor in the screen component.
-  color: string,
-): BotPlayer => ({
+// Creates the BotPlayer.
+// color is passed in from the screen via useTheme().
+export const createBotPlayer = (color: string): BotPlayer => ({
   type: 'bot',
   id: 'player2',
   name: APP_CONFIG.botName,
   avatar: TTT_CONFIG.botAvatar,
-  color, // dynamic — comes from the active theme
+  color,
   difficulty: TTT_CONFIG.defaultBotDifficulty,
 });
 
 // Creates the full initial GameState when the game starts.
 // Called once in game.hook.ts inside useState().
-// Angular equivalent: ngOnInit() setting up initial component state.
 export const createInitialGameState = (
-  player1: Player,  // The human player — always goes first.
-  player2: Player   // The bot or second player.
+  player1: Player,
+  player2: Player,
 ): GameState => ({
-  board: createInitialBoard(),  // Fresh 3x3 board with all empty cells.
-  currentPlayer: player1,       // Player 1 always takes the first turn.
-  winner: null,                 // No winner yet.
-  isDraw: false,                // Not a draw yet.
-  isGameOver: false,            // Game has not ended yet.
+  board: createInitialBoard(),
+  currentPlayer: player1,    // Player 1 always goes first.
+  winner: null,              // No winner yet.
+  winType: null,             // No win type yet.
+  usedAnswers: [],           // No answers used yet — empty list.
+  cellCounts: {
+    player1: 0,              // Player 1 has 0 cells at the start.
+    player2: 0,              // Player 2 has 0 cells at the start.
+  },
+  isGameOver: false,
 });
 
-// Creates the initial TurnState — "nothing is happening right now."
-// Called at the start of the game and after EVERY turn ends.
-// Resetting to this closes the modal and clears the selected cell.
-// Angular equivalent: a method that resets turn-related component properties.
+// Creates the initial TurnState — nothing is happening right now.
+// Called at the start of the game and after every turn ends.
 export const createInitialTurnState = (): TurnState => ({
-  selectedCell: null,     // No cell is tapped yet.
-  isModalVisible: false,  // Question modal is hidden.
-  currentQuestion: null,  // No question is loaded.
-  isWrongAnswer: false,   // No wrong answer animation playing.
+  selectedCell: null,
+  isModalVisible: false,
+  currentQuestion: null,
+  isWrongAnswer: false,
+  isAlreadyUsed: false,   // No already-used error at the start.
 });
 
-// ============================================================
-// QUESTION LOGIC
-// Functions that find and return questions for cells.
-// ============================================================
+// ── QUESTION LOGIC ──────────────────────────────────────────
 
 // Returns the question for a specific cell on the board.
 // Called in game.hook.ts when a player taps a cell.
-// Looks through QUESTIONS to find the one where rowHeader matches
-// the row index and colHeader matches the column index.
-// Returns null if no question found — should never happen with correct data.
-// Angular equivalent: a method in a QuestionService that queries the data.
-export const getQuestion = (
-  row: number,  // The row index of the tapped cell (0, 1, or 2).
-  col: number   // The column index of the tapped cell (0, 1, or 2).
-): CellQuestion | null => {
-  // Get the id of the row header at this index.
-  // Example: row 0 → 'arsenal', row 1 → 'aston_villa'
+export const getQuestion = (row: number, col: number): CellQuestion | null => {
   const rowId = ROW_HEADERS[row]?.id;
-
-  // Get the id of the column header at this index.
-  // Example: col 1 → 'chelsea', col 2 → 'man_utd'
   const colId = COL_HEADERS[col]?.id;
-
-  // Find the question where BOTH headers match.
-  // .find() returns the first match or undefined if none found.
-  const question = QUESTIONS.find(
+  return QUESTIONS.find(
     (q) => q.rowHeader.id === rowId && q.colHeader.id === colId
-  );
-
-  // Return the question or null if nothing matched.
-  return question ?? null;
+  ) ?? null;
 };
 
-// ============================================================
-// ANSWER VALIDATION
-// Functions that check whether a player's answer is correct.
-// ============================================================
+// ── ANSWER VALIDATION ───────────────────────────────────────
 
-// Checks whether the user's typed answer matches any accepted answer.
-// Called in game.hook.ts inside onAnswerSubmit().
-// Returns true if correct, false if not.
-// Angular equivalent: a validateAnswer() method in a QuestionService.
+// Checks the player's answer and returns one of three results:
+// 'correct'      = answer matches an accepted answer and has not been used before.
+// 'wrong'        = answer does not match any accepted answer.
+// 'already-used' = answer is correct BUT was already used on another cell.
+//
+// The 'already-used' case is treated differently from 'wrong':
+// - 'wrong' triggers a shake animation and switches the turn.
+// - 'already-used' shows a specific message and keeps the modal open
+//   so the player can try a different answer without losing their turn.
+//
+// Angular equivalent: a validateAnswer() method in GameService
+// that returns an AnswerResultEnum.
 export const validateAnswer = (
-  userAnswer: string,        // The raw string the player typed.
-  acceptedAnswers: string[], // The valid answers from questions.data.ts.
-  usedAnswer: string | null  // The answer already used to claim this cell.
-                             // Only relevant when Steal Cells is enabled.
-): boolean => {
-  // Clean the input: trim whitespace and convert to lowercase.
-  // This means 'Nasri ', 'NASRI', 'nasri' all become 'nasri'.
+  userAnswer: string,
+  acceptedAnswers: string[],
+  usedAnswerOnCell: string | null,  // The answer already used on THIS specific cell.
+  globalUsedAnswers: string[],       // All answers used anywhere on the board.
+): AnswerResult => {
+  // Clean the input — trim whitespace and convert to lowercase.
   const cleaned = userAnswer.trim().toLowerCase();
 
   // Reject empty answers immediately.
-  if (cleaned.length === 0) return false;
+  if (cleaned.length === 0) return 'wrong';
 
-  // If this cell was already claimed, the new answer must be
-  // DIFFERENT from the answer that was used to claim it.
-  // This enforces the Steal Cells rule — you cannot reuse the same answer.
-  if (usedAnswer && cleaned === usedAnswer.toLowerCase()) return false;
-
-  // Check if the cleaned answer matches ANY accepted answer.
-  // .some() returns true as soon as ONE match is found.
-  return acceptedAnswers.some((answer) => {
+  // Check if this answer matches any accepted answer using fuzzy matching.
+  const isCorrectAnswer = acceptedAnswers.some((answer) => {
     const cleanedAnswer = answer.trim().toLowerCase();
-
     return (
-      // Exact match — 'nasri' === 'nasri'.
       cleaned === cleanedAnswer ||
-
-      // Partial match — user typed 'nasri', accepted is 'samir nasri'.
-      // Handles first-name-only or last-name-only answers.
       cleanedAnswer.includes(cleaned) ||
-
-      // Reverse partial — user typed 'samir nasri', accepted is 'nasri'.
       cleaned.includes(cleanedAnswer) ||
-
-      // Fuzzy match — allows up to 2 character differences.
-      // Handles typos: 'nasr', 'nasry', 'narsri' still match 'nasri'.
       getLevenshteinDistance(cleaned, cleanedAnswer) <= 2
     );
   });
+
+  // If the answer does not match any accepted answer — it is simply wrong.
+  if (!isCorrectAnswer) return 'wrong';
+
+  // The answer IS correct — now check if it has been used before.
+
+  // Check 1: Was this exact answer used to claim THIS cell already?
+  // Relevant when Steal Cells is enabled — the new answer must be different.
+  if (usedAnswerOnCell && cleaned === usedAnswerOnCell.toLowerCase()) {
+    return 'already-used';
+  }
+
+ // Check 2: Was this answer used on ANY OTHER cell on the board?
+// We check in both directions:
+// Direction A: does the cleaned answer match or contain a used answer?
+//   e.g. user types 'marc bosnich', used answer is 'marc bosnich' → blocked
+//   e.g. user types 'marc bosnich', used answer is 'bosnich' → blocked
+// Direction B: does a used answer contain the cleaned answer?
+//   e.g. user types 'bosnich', used answer is 'marc bosnich' → blocked
+//   e.g. user types 'marc', used answer is 'marc bosnich' → blocked
+// We also use fuzzy matching (distance <= 2) to catch typos of used answers.
+// This means once 'marc bosnich' is used, no variation of that name passes.
+const isGloballyUsed = globalUsedAnswers.some((used) => {
+  const cleanedUsed = used.toLowerCase();
+  return (
+    // Exact match — 'marc bosnich' === 'marc bosnich'.
+    cleaned === cleanedUsed ||
+    // User typed a substring of a used answer — 'bosnich' inside 'marc bosnich'.
+    cleanedUsed.includes(cleaned) ||
+    // User typed a superset of a used answer — 'marc bosnich' contains 'bosnich'.
+    cleaned.includes(cleanedUsed) ||
+    // Fuzzy match — handles typos of the used answer.
+    getLevenshteinDistance(cleaned, cleanedUsed) <= 2
+  );
+});
+
+  if (isGloballyUsed) return 'already-used';
+
+  // Answer is correct and has never been used before — accept it.
+  return 'correct';
 };
 
-// Calculates the edit distance between two strings.
-// The edit distance is the number of single-character changes
-// (insert, delete, substitute) needed to turn one string into another.
-// Example: 'nasri' vs 'nasry' = 1 substitution → distance 1 → accepted.
-// Example: 'messi' vs 'nasri' = 4 changes → distance 4 → rejected.
+// Calculates the Levenshtein distance between two strings.
+// Allows up to 2 typos in an answer (e.g. 'nasr' or 'nasry' still matches 'nasri').
 // Called only inside validateAnswer() — not used anywhere else.
-// Angular equivalent: a private utility method in a service.
 const getLevenshteinDistance = (a: string, b: string): number => {
-  // Build a 2D matrix to store intermediate distances.
   const matrix: number[][] = [];
-
-  // Fill the first column — distance from '' to b[0..i].
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-
-  // Fill the first row — distance from '' to a[0..j].
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-
-  // Fill the rest of the matrix by comparing characters.
+  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
   for (let i = 1; i <= b.length; i++) {
     for (let j = 1; j <= a.length; j++) {
       if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        // Characters match — carry forward the previous distance unchanged.
         matrix[i][j] = matrix[i - 1][j - 1];
       } else {
-        // Characters differ — take the minimum of the 3 possible edits.
         matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1      // deletion
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1,
         );
       }
     }
   }
-
-  // Bottom-right cell = final distance between the two full strings.
   return matrix[b.length][a.length];
 };
 
-// ============================================================
-// GAME STATE LOGIC
-// Functions that calculate new game states after actions.
-// All return NEW objects — never mutate the inputs.
-// React requires immutable state — you never modify state directly,
-// always return a fresh copy with the changes applied.
-// Angular equivalent: methods that return new state objects
-// rather than mutating this.gameState directly.
-// ============================================================
+// ── GAME STATE LOGIC ────────────────────────────────────────
 
-// Returns a new board with one specific cell claimed by a player.
-// Called in game.hook.ts after a correct answer is submitted.
-// NEVER mutates the original board — always returns a new one.
+// Returns a new board with one cell claimed. Never mutates the original.
+// Called after a 'correct' answer result in game.hook.ts.
 export const claimCell = (
-  board: CellState[][], // The current board state.
-  row: number,          // Row of the cell to claim.
-  col: number,          // Column of the cell to claim.
-  player: Player,       // The player claiming the cell.
-  answer: string        // The answer used — stored to enforce Steal Cells rule.
+  board: CellState[][],
+  row: number,
+  col: number,
+  player: Player,
+  answer: string,
 ): CellState[][] => {
-  // Create a completely new board by copying every row and every cell.
-  // map() on the outer array copies rows.
-  // map() on the inner array copies each cell with spread { ...cell }.
-  // This guarantees the original board is completely untouched.
-  const newBoard = board.map((r) =>
-    r.map((cell) => ({ ...cell }))
-  );
-
-  // Now update ONLY the specific cell that was just claimed.
+  // Create a completely new board — React requires immutable state updates.
+  const newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
   newBoard[row][col] = {
-    claimedBy: player,                        // Mark as owned by this player.
-    usedAnswer: answer.trim().toLowerCase(),   // Store the answer used.
+    claimedBy: player,
+    usedAnswer: answer.trim().toLowerCase(),
   };
-
   return newBoard;
 };
 
-// Checks whether a player has won the game.
+// Checks whether a player has won by getting 3 in a row.
 // Called after every correct answer in game.hook.ts.
-// Returns true if the player owns all 3 cells in any winning line.
-// Angular equivalent: a checkWinner() method in a GameService.
-export const checkWinner = (
-  board: CellState[][], // The board AFTER the latest cell was claimed.
-  player: Player        // The player to check for a win.
-): boolean => {
-  // All 8 possible winning lines in a 3x3 grid.
-  // Each line is 3 [row, col] pairs.
+// Returns true if the player owns all 3 cells in any of the 8 winning lines.
+export const checkWinner = (board: CellState[][], player: Player): boolean => {
   const winningLines = [
     [[0,0],[0,1],[0,2]], // top row
     [[1,0],[1,1],[1,2]], // middle row
@@ -289,94 +234,93 @@ export const checkWinner = (
     [[0,0],[1,1],[2,2]], // diagonal top-left → bottom-right
     [[0,2],[1,1],[2,0]], // diagonal top-right → bottom-left
   ];
-
-  // .some() returns true as soon as ONE winning line is found.
   return winningLines.some((line) =>
-    // .every() returns true only if ALL 3 cells in the line
-    // are owned by this specific player.
-    line.every(
-      ([row, col]) => board[row][col].claimedBy?.id === player.id
-    )
+    line.every(([r, c]) => board[r][c].claimedBy?.id === player.id)
   );
 };
 
-// Checks whether the game is a draw.
-// Called after every correct answer, only if checkWinner returned false.
-// Returns true if every cell on the board is claimed.
-// Angular equivalent: a checkDraw() method in a GameService.
-export const checkDraw = (board: CellState[][]): boolean => {
-  // .every() on the outer array checks every row.
-  // .every() on the inner array checks every cell in that row.
-  // Returns true only if ALL cells have a non-null claimedBy.
+// Checks if all 9 cells have been claimed.
+// Called after every correct answer when checkWinner returns false.
+// If the board is full and nobody won a line, we count cells instead.
+export const checkBoardFull = (board: CellState[][]): boolean => {
   return board.every((row) =>
     row.every((cell) => cell.claimedBy !== null)
   );
 };
 
-// Returns whichever player is NOT the current player.
-// Called after every turn (correct or wrong answer) to switch turns.
-// Angular equivalent: a switchPlayer() method in a GameService.
-export const switchPlayer = (
-  currentPlayer: Player, // The player whose turn just ended.
-  player1: Player,       // Player 1 reference.
-  player2: Player        // Player 2 / Bot reference.
+// Counts how many cells a specific player owns on the board.
+// Called after every correct answer to update the live score display.
+// Also called by getCellCountWinner when the board is full.
+export const countCells = (board: CellState[][], player: Player): number => {
+  let count = 0;
+  board.forEach((row) => {
+    row.forEach((cell) => {
+      if (cell.claimedBy?.id === player.id) count++;
+    });
+  });
+  return count;
+};
+
+// Determines the winner by cell count when the board is full with no line winner.
+// With 9 cells split between 2 players the count is always uneven —
+// a draw is mathematically impossible so this always returns a winner.
+export const getCellCountWinner = (
+  board: CellState[][],
+  player1: Player,
+  player2: Player,
 ): Player => {
-  // If currentPlayer is player1, return player2. Otherwise return player1.
+  const p1Count = countCells(board, player1);
+  const p2Count = countCells(board, player2);
+  // Whoever has more cells wins.
+  return p1Count > p2Count ? player1 : player2;
+};
+
+// Returns whichever player is NOT the current player.
+// Called after every completed turn to switch to the other player.
+export const switchPlayer = (
+  currentPlayer: Player,
+  player1: Player,
+  player2: Player,
+): Player => {
   return currentPlayer.id === player1.id ? player2 : player1;
 };
 
-// ============================================================
-// BOT LOGIC
-// Functions that control what the Bot does on its turn.
-// Phase 1: easy difficulty only — bot picks a random empty cell
-// and always submits the first accepted answer for that cell.
-// Phase 2+: medium/hard difficulty with strategic cell selection.
-// ============================================================
+// ── BOT LOGIC ───────────────────────────────────────────────
 
 // Returns the cell the bot will play on its turn.
-// Called in game.hook.ts after the turn switches to the bot.
-// Angular equivalent: a getBotMove() method in a BotService.
+// Easy difficulty: picks a random empty cell.
 export const getBotMove = (
-  board: CellState[][] // The current board — bot needs to see empty cells.
+  board: CellState[][],
 ): { row: number; col: number } | null => {
-  // Find all empty cells on the board.
   const emptyCells: { row: number; col: number }[] = [];
-
   board.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
-      // A cell is empty if nobody has claimed it yet.
       if (cell.claimedBy === null) {
         emptyCells.push({ row: rowIndex, col: colIndex });
       }
     });
   });
-
-  // If no empty cells exist, return null — game should already be over.
   if (emptyCells.length === 0) return null;
-
-  // Easy difficulty: pick a random empty cell.
-  // Math.random() returns a number between 0 and 1.
-  // Multiplying by emptyCells.length and flooring gives a random index.
-  const randomIndex = Math.floor(Math.random() * emptyCells.length);
-  return emptyCells[randomIndex];
+  return emptyCells[Math.floor(Math.random() * emptyCells.length)];
 };
 
 // Returns the answer the bot will submit for a given cell.
-// Called in game.hook.ts right after getBotMove() returns a cell.
-// Easy difficulty: always uses the first accepted answer for that cell.
-// Angular equivalent: a getBotAnswer() method in a BotService.
+// Easy difficulty: always uses the first accepted answer.
+// Checks the global used answers list to avoid already-used answers.
 export const getBotAnswer = (
-  row: number, // The row of the cell the bot chose.
-  col: number  // The column of the cell the bot chose.
+  row: number,
+  col: number,
+  globalUsedAnswers: string[], // Bot respects the global used answers rule too.
 ): string | null => {
-  // Get the question for the cell the bot chose.
   const question = getQuestion(row, col);
-
-  // If no question found, return null — bot cannot answer.
   if (!question) return null;
 
-  // Easy difficulty: always return the first accepted answer.
-  // This means the bot always answers correctly on easy mode.
-  // Phase 2+: medium/hard will have a chance of wrong answers.
-  return question.acceptedAnswers[0];
+  // Find the first accepted answer that has NOT been used yet.
+  // Bot is smart enough not to reuse an answer from another cell.
+  const availableAnswer = question.acceptedAnswers.find(
+    (answer) => !globalUsedAnswers.includes(answer.trim().toLowerCase())
+  );
+
+  // Return the first available answer, or null if all answers are used.
+  return availableAnswer ?? null;
 };

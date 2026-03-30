@@ -24,11 +24,13 @@ import { AppButton } from '../../../core/components/app-button.component';
 import { useTheme } from '../../../core/theme/theme.context';
 import { THEME } from '../../../core/theme/theme.config';
 import { TTT_CONFIG } from '../config/game.config';
+import { useLanguage } from '../../../core/i18n/language.context';
 
 type Props = {
   isVisible: boolean;
   question: CellQuestion | null;
   isWrongAnswer: boolean;
+  isAlreadyUsed: boolean;    // Add this line.
   timeLimitEnabled: boolean;
   onSubmit: (answer: string) => void;
   onClose: () => void;
@@ -38,12 +40,13 @@ export const QuestionModal = ({
   isVisible,
   question,
   isWrongAnswer,
+  isAlreadyUsed,    // Add this line.
   timeLimitEnabled,
   onSubmit,
   onClose,
 }: Props) => {
   const { colors } = useTheme();
-
+  const { t } = useLanguage();
   const [answer, setAnswer] = useState<string>('');
   const [timeLeft, setTimeLeft] = useState<number>(TTT_CONFIG.turnTimeLimitSeconds);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
@@ -155,14 +158,14 @@ export const QuestionModal = ({
 
             {/* Question */}
             <AppText variant="caption" style={{ textAlign: 'center', color: colors.textSecondary }}>
-              Name a player who played for both
+              {t.game.nameAPlayer}
             </AppText>
 
             <View style={styles.clubsRow}>
               <AppText variant="h3" style={{ color: colors.primary, textAlign: 'center' }}>
                 {question.rowHeader.label}
               </AppText>
-              <AppText variant="body" style={{ color: colors.textSecondary }}>&</AppText>
+              <AppText variant="body" style={{ color: colors.textSecondary }}>{t.game.andConnector}</AppText>
               <AppText variant="h3" style={{ color: colors.primary, textAlign: 'center' }}>
                 {question.colHeader.label}
               </AppText>
@@ -176,7 +179,7 @@ export const QuestionModal = ({
                   color: colors.textPrimary,
                   borderColor: isWrongAnswer ? colors.error : colors.border,
                 }]}
-                placeholder="Type player name..."
+                placeholder={t.game.placeholder}
                 placeholderTextColor={colors.textSecondary}
                 value={answer}
                 onChangeText={setAnswer}
@@ -185,18 +188,34 @@ export const QuestionModal = ({
                 onSubmitEditing={handleSubmit}
                 returnKeyType="done"
               />
-              {isWrongAnswer && (
-                <AppText variant="caption" style={{ color: colors.error, textAlign: 'center' }}>
-                  Wrong answer — try again!
-                </AppText>
-              )}
+              {/* Wrong answer message — shown when answer does not match. */}
+{isWrongAnswer && (
+  <AppText
+    variant="caption"
+    style={{ color: colors.error, textAlign: 'center' }}
+  >
+    {t.game.wrongAnswer}
+  </AppText>
+)}
+
+{/* Already used message — shown when answer is correct but
+    already used on another cell. Player keeps their turn
+    and can try a different name. */}
+{isAlreadyUsed && (
+  <AppText
+    variant="caption"
+    style={{ color: colors.warning, textAlign: 'center' }}
+  >
+    {t.game.alreadyUsed}
+  </AppText>
+)}
             </Animated.View>
 
             {/* Buttons */}
             <View style={styles.buttonsRow}>
-              <AppButton label="Skip" onPress={onClose} variant="ghost" style={styles.skipButton} />
+              <AppButton label={t.game.skip} onPress={onClose} variant="ghost" style={styles.skipButton} />
               <AppButton
-                label="Submit"
+                label={t.game.submit}
                 onPress={handleSubmit}
                 disabled={answer.trim().length === 0}
                 style={styles.submitButton}

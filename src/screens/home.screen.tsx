@@ -16,22 +16,37 @@ import { AppButton } from '../core/components/app-button.component';
 import { APP_CONFIG } from '../core/config/app.config';
 import { useTheme } from '../core/theme/theme.context';
 import { THEME } from '../core/theme/theme.config';
+import { useRoute, RouteProp } from '@react-navigation/native';
+import { useLanguage } from '../core/i18n/language.context';
+
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+type RoutePropType = RouteProp<RootStackParamList, 'Home'>;
 
 export const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { colors } = useTheme();
+  const route = useRoute<RoutePropType>();
+  const { t } = useLanguage();
 
+  const { playerName, playerAvatar } = route.params;
   const onComingSoon = () => {
-    Alert.alert('Coming Soon', 'This feature will be available in a future update.');
+    Alert.alert(t.common.comingSoon, t.common.comingSoonMessage);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
       <AppText variant="h1" style={styles.logo}>⚽</AppText>
-
+ <AppText variant="h2" style={{ color: colors.primary }}>
+        {t.common.appName}
+      </AppText>
+      <AppText variant="caption" style={{ color: colors.textSecondary }}>
+          {t.home.welcome}
+        </AppText>
+  <AppText variant="h3" style={{ color: colors.primary }}>
+    {playerAvatar} {playerName}
+  </AppText>
       <AppText variant="h2" style={{ color: colors.primary }}>
         {APP_CONFIG.name}
       </AppText>
@@ -39,34 +54,34 @@ export const HomeScreen = () => {
       <View style={styles.menu}>
 
         <AppButton
-          label="Play"
+          label={t.home.play}
           onPress={() => navigation.navigate('GameSelect')}
           style={styles.menuButton}
         />
 
         <AppButton
-          label="Settings"
+          label={t.home.settings}
           onPress={() => navigation.navigate('Settings')}
           variant="secondary"
           style={styles.menuButton}
         />
 
         <AppButton
-          label="Help"
+          label={t.home.help}
           onPress={() => navigation.navigate('Help')}
           variant="secondary"
           style={styles.menuButton}
         />
 
         <AppButton
-          label="Leaderboards"
+          label={t.home.leaderboards}
           onPress={onComingSoon}
           variant="ghost"
           style={styles.menuButton}
         />
 
         <AppButton
-          label="Shop"
+          label={t.home.shop}
           onPress={onComingSoon}
           variant="ghost"
           style={styles.menuButton}

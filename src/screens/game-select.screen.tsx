@@ -15,22 +15,24 @@ import { AppButton } from '../core/components/app-button.component';
 import { useTheme } from '../core/theme/theme.context';
 import { THEME } from '../core/theme/theme.config';
 import { TTT_CONFIG } from '../games/tic-tac-toe/config/game.config';
+import { useLanguage } from '../core/i18n/language.context';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'GameSelect'>;
 
 export const GameSelectScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const onComingSoon = () => {
-    Alert.alert('Coming Soon', 'This game will be available in a future update.');
+    Alert.alert(t.common.comingSoon, t.common.comingSoonMessage);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
       <AppText variant="h2" style={{ color: colors.primary }}>
-        Choose a Game
+        {t.gameSelect.title}
       </AppText>
 
       {/* Tic-Tac-Toe — Phase 1 */}

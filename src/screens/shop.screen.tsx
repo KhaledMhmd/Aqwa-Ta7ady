@@ -10,17 +10,18 @@ import { AppText } from '../core/components/app-text.component';
 import { AppButton } from '../core/components/app-button.component';
 import { useTheme } from '../core/theme/theme.context';
 import { THEME } from '../core/theme/theme.config';
+import { useLanguage } from '../core/i18n/language.context';
 
 export const ShopScreen = () => {
   const navigation = useNavigation();
   const { colors } = useTheme();
-
+  const { t } = useLanguage();
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <AppText variant="h1">🛍️</AppText>
-      <AppText variant="h2" style={{ color: colors.primary }}>Shop</AppText>
-      <AppText variant="caption">Coming in a future update. Exclusive items on the way!</AppText>
-      <AppButton label="Back" onPress={() => navigation.goBack()} variant="ghost" style={styles.button} />
+      <AppText variant="h2" style={{ color: colors.primary }}>{t.shop.title}</AppText>
+      <AppText variant="caption">{t.shop.comingSoonMessage}</AppText>
+      <AppButton label={t.common.back} onPress={() => navigation.goBack()} variant="ghost" style={styles.button} />
     </View>
   );
 };

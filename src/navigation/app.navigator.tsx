@@ -25,7 +25,7 @@ import { GameScreen } from '../games/tic-tac-toe/screens/game.screen';
 export type RootStackParamList = {
   Splash: undefined;
   Auth: undefined;
-  Home: undefined;
+  Home: {playerName: string; playerAvatar: string};
   GameSelect: undefined;
   Settings: undefined;
   Help: undefined;

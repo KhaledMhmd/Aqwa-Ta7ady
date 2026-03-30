@@ -10,7 +10,7 @@ import { GridHeader, CellQuestion } from '../types/game.types';
 // ROW_HEADERS — clubs shown on the LEFT side of the board.
 export const ROW_HEADERS: GridHeader[] = [
   { id: 'arsenal', label: 'Arsenal', image: 'https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg' },
-  { id: 'aston_villa', label: 'Aston Villa', image: 'https://upload.wikimedia.org/wikipedia/en/f/f9/Aston_Villa_FC_crest_%282016%29.svg' },
+  { id: 'aston_villa', label: 'Aston Villa', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9a/Aston_Villa_FC_new_crest.svg/250px-Aston_Villa_FC_new_crest.svg.png' },
   { id: 'liverpool', label: 'Liverpool', image: 'https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg' },
 ];
 
@@ -27,8 +27,8 @@ export const QUESTIONS: CellQuestion[] = [
   { rowHeader: ROW_HEADERS[0], colHeader: COL_HEADERS[1], acceptedAnswers: ['ashley cole', 'cole', 'william gallas', 'gallas', 'petr cech', 'cech'] },
   { rowHeader: ROW_HEADERS[0], colHeader: COL_HEADERS[2], acceptedAnswers: ['robin van persie', 'van persie', 'rvp', 'mikael silvestre', 'silvestre'] },
   { rowHeader: ROW_HEADERS[1], colHeader: COL_HEADERS[0], acceptedAnswers: ['gareth barry', 'barry', 'james milner', 'milner'] },
-  { rowHeader: ROW_HEADERS[1], colHeader: COL_HEADERS[1], acceptedAnswers: ['marc albrighton', 'albrighton', 'ashley young', 'young'] },
-  { rowHeader: ROW_HEADERS[1], colHeader: COL_HEADERS[2], acceptedAnswers: ['dwight yorke', 'yorke', 'richard dunne', 'dunne'] },
+  { rowHeader: ROW_HEADERS[1], colHeader: COL_HEADERS[1], acceptedAnswers: ['marc albrighton', 'albrighton', 'ashley young', 'young', 'bosnich', 'marc bosnich'] },
+  { rowHeader: ROW_HEADERS[1], colHeader: COL_HEADERS[2], acceptedAnswers: ['dwight yorke', 'yorke', 'richard dunne', 'dunne', 'bosnich', 'marc bosnich'] },
   { rowHeader: ROW_HEADERS[2], colHeader: COL_HEADERS[0], acceptedAnswers: ['raheem sterling', 'sterling', 'steve mcmanaman', 'mcmanaman'] },
   { rowHeader: ROW_HEADERS[2], colHeader: COL_HEADERS[1], acceptedAnswers: ['fernando torres', 'torres', 'daniel sturridge', 'sturridge'] },
   { rowHeader: ROW_HEADERS[2], colHeader: COL_HEADERS[2], acceptedAnswers: ['paul ince', 'ince', 'michael owen', 'owen'] },

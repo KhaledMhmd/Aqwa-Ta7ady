@@ -32,7 +32,7 @@ import { AppButton } from '../../../core/components/app-button.component';
 import { THEME } from '../../../core/theme/theme.config';
 import { TTT_CONFIG } from '../config/game.config';
 import { useTheme } from '../../../core/theme/theme.context';
-
+import { useLanguage } from '../../../core/i18n/language.context';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'TicTacToe'>;
 type RoutePropType = RouteProp<RootStackParamList, 'TicTacToe'>;
@@ -44,7 +44,7 @@ export const GameScreen = () => {
   // Angular equivalent: ActivatedRoute.snapshot.params
   const route = useRoute<RoutePropType>();
   const { colors } = useTheme();
-
+  const { t } = useLanguage();
   // Extract playerName and playerAvatar from route params.
   const { playerName, playerAvatar } = route.params;
 
@@ -99,27 +99,37 @@ export const GameScreen = () => {
 
   // onGameOver is called when the game ends — shows a result alert.
   // Angular equivalent: a method triggered by a game over event from the service.
-  const showResultAlert = () => {
-    const title = gameState.isDraw
-      ? "It's a Draw!"
-      : `${gameState.winner?.name} Wins!`;
+ // showResultAlert displays the result when the game ends.
+// Always shows a winner — no draw possible with this rule set.
+const showResultAlert = () => {
+  const winnerName = gameState.winner?.name ?? '';
 
-    const message = gameState.isDraw
-      ? 'Nobody wins this time. Play again?'
-      : `${gameState.winner?.name} got 3 in a row!`;
+  // Replace {name} placeholder with actual winner name.
+  // Angular equivalent: using the translate pipe with parameters.
+  const title = gameState.winType === 'line'
+    ? t.result.winsLine.replace('{name}', winnerName)
+    : t.result.winsPoints.replace('{name}', winnerName);
 
-    Alert.alert(title, message, [
-      {
-        text: 'Play Again',
-        onPress: resetGame,
-      },
-      {
-        text: 'Home',
-        onPress: () => navigation.navigate('Home'),
-        style: 'cancel',
-      },
-    ]);
-  };
+  const lineMsg = t.result.lineMessage.replace('{name}', winnerName);
+  const score = `${t.result.finalScore}\n${player1.name}: ${gameState.cellCounts.player1} ${t.result.cells}\n${player2.name}: ${gameState.cellCounts.player2} ${t.result.cells}`;
+
+  const message = gameState.winType === 'line'
+    ? `${lineMsg}\n\n${score}`
+    : `${t.result.pointsMessage}\n\n${score}`;
+
+  Alert.alert(title, message, [
+    { text: t.result.playAgain, onPress: resetGame },
+    {
+      text: t.result.home,
+      onPress: () => navigation.navigate('Home', {
+        playerName: player1.name,
+        playerAvatar: player1.avatar,
+      }),
+      style: 'cancel',
+    },
+  ]);
+};
+
 
   // Show result alert when game ends.
   // useEffect watches isGameOver — fires when the game finishes.
@@ -139,7 +149,7 @@ export const GameScreen = () => {
         <View style={styles.header}>
           {/* Back button */}
           <AppButton
-            label="← Back"
+            label={t.common.back}
             onPress={() => navigation.goBack()}
             variant="ghost"
             style={styles.backButton}
@@ -171,13 +181,14 @@ export const GameScreen = () => {
 
         {/* ── QUESTION MODAL ────────────────────────────── */}
         <QuestionModal
-          isVisible={turnState.isModalVisible}
-          question={turnState.currentQuestion}
-          isWrongAnswer={turnState.isWrongAnswer}
-          timeLimitEnabled={settings.gameRules.timeLimitEnabled}
-          onSubmit={onAnswerSubmit}
-          onClose={onModalClose}
-        />
+  isVisible={turnState.isModalVisible}
+  question={turnState.currentQuestion}
+  isWrongAnswer={turnState.isWrongAnswer}
+  isAlreadyUsed={turnState.isAlreadyUsed}  // Add this line.
+  timeLimitEnabled={settings.gameRules.timeLimitEnabled}
+  onSubmit={onAnswerSubmit}
+  onClose={onModalClose}
+/>
 
       </View>
     </SafeAreaView>

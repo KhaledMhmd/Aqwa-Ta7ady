@@ -15,11 +15,13 @@ import { AppText } from '../core/components/app-text.component';
 import { APP_CONFIG } from '../core/config/app.config';
 import { useTheme } from '../core/theme/theme.context';
 import { THEME } from '../core/theme/theme.config';
+import { useLanguage } from '../core/i18n/language.context';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>;
 
 export const SplashScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
 
   // Get active colours from ThemeContext.
   const { colors } = useTheme();
@@ -38,10 +40,10 @@ export const SplashScreen = () => {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <AppText variant="h1" style={styles.logo}>⚽</AppText>
       <AppText variant="h2" style={{ color: colors.primary }}>
-        {APP_CONFIG.name}
+        {t.common.appName}
       </AppText>
       <AppText variant="caption">
-        {APP_CONFIG.tagline}
+        {t.common.appTagline}
       </AppText>
     </View>
   );

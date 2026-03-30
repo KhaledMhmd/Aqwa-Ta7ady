@@ -1,9 +1,9 @@
 // ============================================================
 // auth.screen.tsx
 // Sign In / Sign Up / Play as Guest screen.
-// Phase 1: Only Play as Guest is functional.
-// Sign In and Sign Up show Coming Soon alert.
-// Angular equivalent: AuthComponent with conditional rendering.
+// Now includes language switcher — Egyptian flag for Arabic,
+// UK flag for English. Switching language restarts the app.
+// Angular equivalent: AuthComponent with language toggle.
 // ============================================================
 
 import React, { useState } from 'react';
@@ -16,6 +16,7 @@ import { AppButton } from '../core/components/app-button.component';
 import { APP_CONFIG } from '../core/config/app.config';
 import { TTT_CONFIG } from '../games/tic-tac-toe/config/game.config';
 import { useTheme } from '../core/theme/theme.context';
+import { useLanguage } from '../core/i18n/language.context';
 import { THEME } from '../core/theme/theme.config';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
@@ -24,36 +25,59 @@ export const AuthScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { colors } = useTheme();
 
-  // Player name input state.
-  const [playerName, setPlayerName] = useState<string>('');
+  // useLanguage gives us translations (t) and setLanguage function.
+  // Angular equivalent: injecting TranslationService.
+  const { t, language, setLanguage } = useLanguage();
 
-  // Selected avatar state — defaults to first available avatar.
+  const [playerName, setPlayerName] = useState<string>('');
   const [selectedAvatar, setSelectedAvatar] = useState<string>(
     TTT_CONFIG.availableAvatars[0]
   );
 
-  // Validates input and navigates to Home.
   const onPlayAsGuest = () => {
     if (playerName.trim().length === 0) {
-      Alert.alert('Enter your name', 'Please enter a name to continue.');
+      Alert.alert(t.auth.nameRequired, t.auth.nameRequiredMessage);
       return;
     }
-    navigation.replace('Home');
+    navigation.replace('Home', {
+      playerName: playerName.trim(),
+      playerAvatar: selectedAvatar,
+    });
   };
 
-  // Shows Coming Soon alert for Phase 2+ features.
   const onComingSoon = () => {
-    Alert.alert('Coming Soon', 'This feature will be available in a future update.');
+    Alert.alert(t.common.comingSoon, t.common.comingSoonMessage);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
+      {/* ── LANGUAGE SWITCHER ─────────────────────────────── */}
+      {/* Two flag buttons at the top — tap to switch language */}
+      <View style={styles.languageRow}>
+        {/* Egyptian flag — switches to Arabic */}
+        <AppButton
+          label="🇪🇬"
+          onPress={() => setLanguage('ar')}
+          variant={language === 'ar' ? 'primary' : 'ghost'}
+          style={styles.flagButton}
+        />
+        {/* UK flag — switches to English */}
+        <AppButton
+          label="🇬🇧"
+          onPress={() => setLanguage('en')}
+          variant={language === 'en' ? 'primary' : 'ghost'}
+          style={styles.flagButton}
+        />
+      </View>
+
+      {/* App name */}
       <AppText variant="h2" style={{ color: colors.primary }}>
-        {APP_CONFIG.name}
+        {t.common.appName}
       </AppText>
 
-      <AppText variant="caption">Enter your name to get started</AppText>
+      {/* Tagline */}
+      <AppText variant="caption">{t.common.appTagline}</AppText>
 
       {/* Name input */}
       <TextInput
@@ -61,8 +85,9 @@ export const AuthScreen = () => {
           backgroundColor: colors.surfaceLight,
           color: colors.textPrimary,
           borderColor: colors.border,
+          textAlign: language === 'ar' ? 'right' : 'left',
         }]}
-        placeholder="Your name"
+        placeholder={t.auth.enterName}
         placeholderTextColor={colors.textSecondary}
         value={playerName}
         onChangeText={setPlayerName}
@@ -72,7 +97,7 @@ export const AuthScreen = () => {
 
       {/* Avatar selector */}
       <AppText variant="caption" style={styles.avatarLabel}>
-        Choose your avatar
+        {t.auth.chooseAvatar}
       </AppText>
 
       <View style={styles.avatarRow}>
@@ -87,20 +112,20 @@ export const AuthScreen = () => {
         ))}
       </View>
 
-      {/* Play as Guest — Phase 1 */}
+      {/* Play as Guest */}
       <AppButton
-        label="Play as Guest"
+        label={t.auth.playAsGuest}
         onPress={onPlayAsGuest}
         style={styles.mainButton}
       />
 
       <AppText variant="caption" style={{ color: colors.textSecondary }}>
-        — or —
+        {t.auth.orDivider}
       </AppText>
 
       {/* Sign In — Coming Soon */}
       <AppButton
-        label="Sign In"
+        label={t.auth.signIn}
         onPress={onComingSoon}
         variant="secondary"
         style={styles.mainButton}
@@ -108,7 +133,7 @@ export const AuthScreen = () => {
 
       {/* Sign Up — Coming Soon */}
       <AppButton
-        label="Sign Up"
+        label={t.auth.signUp}
         onPress={onComingSoon}
         variant="ghost"
         style={styles.mainButton}
@@ -125,6 +150,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: THEME.spacing.xl,
     gap: THEME.spacing.sm,
+  },
+  // Language switcher row — sits at the top of the screen.
+  languageRow: {
+    flexDirection: 'row',
+    gap: THEME.spacing.sm,
+    marginBottom: THEME.spacing.md,
+  },
+  // Flag buttons are square and compact.
+  flagButton: {
+    minWidth: 52,
+    minHeight: 44,
+    paddingHorizontal: THEME.spacing.sm,
   },
   input: {
     width: '100%',
