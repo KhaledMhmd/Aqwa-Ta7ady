@@ -7,7 +7,7 @@
 // ============================================================
 
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Alert } from 'react-native';
+import { View, StyleSheet, TextInput, Alert, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/app.navigator';
@@ -24,7 +24,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 export const AuthScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { colors } = useTheme();
-
+const { width } = Dimensions.get('window');
+const LOGO_SIZE = Math.min(width * 0.5, 200);
   // useLanguage gives us translations (t) and setLanguage function.
   // Angular equivalent: injecting TranslationService.
   const { t, language, setLanguage } = useLanguage();
@@ -71,13 +72,12 @@ export const AuthScreen = () => {
         />
       </View>
 
-      {/* App name */}
-      <AppText variant="h2" style={{ color: colors.primary }}>
-        {t.common.appName}
-      </AppText>
-
-      {/* Tagline */}
-      <AppText variant="caption">{t.common.appTagline}</AppText>
+      {/* Logo image replaces the app name text. */}
+<Image
+  source={require('../../assets/appLogo.png')}
+  style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
+  resizeMode="contain"
+/>
 
       {/* Name input */}
       <TextInput

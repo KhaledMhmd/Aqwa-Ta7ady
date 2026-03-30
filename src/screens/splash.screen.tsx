@@ -1,36 +1,41 @@
 // ============================================================
 // splash.screen.tsx
 // First screen shown on app launch.
+// Shows the app logo image instead of the emoji + text.
 // Auto-navigates to Auth after 2 seconds.
-// Angular equivalent: SplashComponent using Router.navigate()
-// inside ngOnInit() after a setTimeout.
 // ============================================================
 
 import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Image,        // Image component — renders the logo file.
+  Dimensions,   // Gets screen dimensions for responsive sizing.
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/app.navigator';
 import { AppText } from '../core/components/app-text.component';
-import { APP_CONFIG } from '../core/config/app.config';
 import { useTheme } from '../core/theme/theme.context';
-import { THEME } from '../core/theme/theme.config';
 import { useLanguage } from '../core/i18n/language.context';
+import { THEME } from '../core/theme/theme.config';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>;
 
+// Get screen width to size the logo responsively.
+const { width } = Dimensions.get('window');
+
+// Cap logo size so it looks good on both small and large screens.
+const LOGO_SIZE = Math.min(width * 0.75, 320);
+
 export const SplashScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { colors } = useTheme();
   const { t } = useLanguage();
 
-  // Get active colours from ThemeContext.
-  const { colors } = useTheme();
-
   // Navigate to Auth after 2 seconds.
-  // Angular equivalent: ngOnInit() { setTimeout(() => this.router.navigate(['/auth']), 2000) }
   useEffect(() => {
     const timer = setTimeout(() => {
-      // replace() removes Splash from the stack so back button skips it.
       navigation.replace('Auth');
     }, 2000);
     return () => clearTimeout(timer);
@@ -38,13 +43,25 @@ export const SplashScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <AppText variant="h1" style={styles.logo}>⚽</AppText>
-      <AppText variant="h2" style={{ color: colors.primary }}>
-        {t.common.appName}
-      </AppText>
-      <AppText variant="caption">
+
+      {/* App logo image — replaces the old emoji + text combination. */}
+      <Image
+        // require() loads a local asset from the project folder. 
+        // The path is relative to this file's location.
+        // Angular equivalent: <img [src]="logoPath"> with an assets path.
+        source={require('../../assets/appLogo.png')}
+        style={styles.logo}
+        // resizeMode='contain' scales the image to fit within the bounds
+        // without cropping or stretching it.
+        // Angular equivalent: object-fit: contain in CSS.
+        resizeMode="contain"
+      />
+
+      {/* Tagline below the logo */}
+      <AppText variant="caption" style={{ color: colors.textSecondary }}>
         {t.common.appTagline}
       </AppText>
+
     </View>
   );
 };
@@ -57,7 +74,7 @@ const styles = StyleSheet.create({
     gap: THEME.spacing.md,
   },
   logo: {
-    fontSize: 80,
-    marginBottom: THEME.spacing.sm,
+    width: LOGO_SIZE,
+    height: LOGO_SIZE,
   },
 });

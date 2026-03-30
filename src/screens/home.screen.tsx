@@ -7,7 +7,7 @@
 // ============================================================
 
 import React from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/app.navigator';
@@ -28,7 +28,8 @@ export const HomeScreen = () => {
   const { colors } = useTheme();
   const route = useRoute<RoutePropType>();
   const { t } = useLanguage();
-
+const { width } = Dimensions.get('window');
+const LOGO_SIZE = Math.min(width * 0.45, 180);
   const { playerName, playerAvatar } = route.params;
   const onComingSoon = () => {
     Alert.alert(t.common.comingSoon, t.common.comingSoonMessage);
@@ -37,19 +38,19 @@ export const HomeScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
-      <AppText variant="h1" style={styles.logo}>⚽</AppText>
- <AppText variant="h2" style={{ color: colors.primary }}>
-        {t.common.appName}
-      </AppText>
-      <AppText variant="caption" style={{ color: colors.textSecondary }}>
+      {/* Logo replaces emoji + app name text. */}
+<Image
+  source={require('../../assets/appLogo.png')}
+  style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
+  resizeMode="contain"
+/> 
+      <AppText variant="h3" style={{ color: colors.textSecondary }}>
           {t.home.welcome}
         </AppText>
-  <AppText variant="h3" style={{ color: colors.primary }}>
+  <AppText variant="h2" style={{ color: colors.primary }}>
     {playerAvatar} {playerName}
   </AppText>
-      <AppText variant="h2" style={{ color: colors.primary }}>
-        {APP_CONFIG.name}
-      </AppText>
+
 
       <View style={styles.menu}>
 
@@ -105,10 +106,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: THEME.spacing.xl,
     gap: THEME.spacing.sm,
   },
-  logo: {
-    fontSize: 60,
-  },
-  menu: {
+    menu: {
     width: '100%',
     gap: THEME.spacing.sm,
     marginTop: THEME.spacing.lg,

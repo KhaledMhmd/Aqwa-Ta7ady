@@ -14,9 +14,9 @@
       "web"
     ],
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./src/assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0F1A17"
     },
     "ios": {
       "supportsTablet": true

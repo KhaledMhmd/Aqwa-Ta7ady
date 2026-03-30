@@ -40,7 +40,7 @@ export const ModeSelectScreen = () => {
   // 'vs-friend' = Coming Soon alert shown, mode resets to null.
   // Angular equivalent: a selectedMode property on the component class
   // that the template uses with *ngIf to show/hide the difficulty section.
-  const [selectedMode, setSelectedMode] = useState<GameMode>(null);
+  const [selectedMode, setSelectedMode] = useState<GameMode>('vs-bot');
 
   // onModeSelect handles step 1 — picking vs Bot or vs Friend.
   const onModeSelect = (mode: 'vs-bot' | 'vs-friend') => {
@@ -122,7 +122,7 @@ export const ModeSelectScreen = () => {
           <AppButton
             label={t.modeSelect.easy}
             onPress={() => onDifficultySelect('easy')}
-            variant="ghost"
+            variant="secondary"
             style={styles.difficultyButton}
           />
 
@@ -138,7 +138,7 @@ export const ModeSelectScreen = () => {
           <AppButton
             label={t.modeSelect.hard}
             onPress={() => onDifficultySelect('hard')}
-            variant="primary"
+            variant="secondary"
             style={styles.difficultyButton}
           />
 
