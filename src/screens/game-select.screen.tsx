@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/app.navigator';
 import { AppText } from '../core/components/app-text.component';
@@ -17,12 +17,22 @@ import { THEME } from '../core/theme/theme.config';
 import { TTT_CONFIG } from '../games/tic-tac-toe/config/game.config';
 import { useLanguage } from '../core/i18n/language.context';
 
+
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'GameSelect'>;
+
+// Add this line:
+type RoutePropType = RouteProp<RootStackParamList, 'GameSelect'>;
 
 export const GameSelectScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const route = useRoute<RoutePropType>();
+
+// Read player info passed from HomeScreen.
+// Angular equivalent: ActivatedRoute.snapshot.params
+const { playerName, playerAvatar } = route.params;
+
 
   const onComingSoon = () => {
     Alert.alert(t.common.comingSoon, t.common.comingSoonMessage);
@@ -38,10 +48,8 @@ export const GameSelectScreen = () => {
       {/* Tic-Tac-Toe — Phase 1 */}
       <AppButton
         label={TTT_CONFIG.name}
-        onPress={() => navigation.navigate('TicTacToe', {
-          playerName: 'Player',
-          playerAvatar: '⚽',
-        })}
+        // Navigate to mode select first — player picks difficulty before the game starts.
+onPress={() => navigation.navigate('TicTacToeModeSelect', { playerName, playerAvatar })}
         style={styles.gameButton}
       />
 

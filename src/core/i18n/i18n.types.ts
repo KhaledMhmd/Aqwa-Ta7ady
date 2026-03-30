@@ -109,6 +109,17 @@ export type Translations = {
     home: string;
   };
 
+  // ── MODE SELECT ─────────────────────────────────────────────
+modeSelect: {
+  title: string;          // 'Choose Difficulty'
+  easy: string;
+  medium: string;
+  hard: string;
+  vsBot: string;          // 'vs Bot'
+  vsFriend: string;       // 'vs Friend' — Coming Soon
+  difficultyTitle: string;  // 'Select Difficulty'
+};
+
   // ── LEADERBOARD + SHOP PLACEHOLDERS ─────────────────────
   leaderboard: {
     title: string;

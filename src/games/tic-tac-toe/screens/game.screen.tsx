@@ -45,14 +45,15 @@ export const GameScreen = () => {
   const route = useRoute<RoutePropType>();
   const { colors } = useTheme();
   const { t } = useLanguage();
-  // Extract playerName and playerAvatar from route params.
-  const { playerName, playerAvatar } = route.params;
+// Destructure all three params — playerName, playerAvatar, and difficulty.
+const { playerName, playerAvatar, difficulty } = route.params;
 
   // Create the player and bot objects using the factory functions.
   // These are created once — they never change during a game session.
   const player1 = createGuestPlayer1(playerName, playerAvatar, colors.player1);
-  const player2 = createBotPlayer(colors.botColor);
-
+// Pass the selected difficulty to the bot player.
+// getBotMove() uses this to decide its strategy.
+const player2 = createBotPlayer(colors.botColor, difficulty);
   // useSettings gives us the current app settings.
   // Angular equivalent: injecting SettingsService.
   const { settings } = useSettings();

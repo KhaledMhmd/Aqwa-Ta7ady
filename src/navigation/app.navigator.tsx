@@ -19,6 +19,7 @@ import { HelpScreen } from '../screens/help.screen';
 import { LeaderboardScreen } from '../screens/leaderboard.screen';
 import { ShopScreen } from '../screens/shop.screen';
 import { GameScreen } from '../games/tic-tac-toe/screens/game.screen';
+import { ModeSelectScreen } from '../games/tic-tac-toe/screens/mode-select.screen';
 
 // RootStackParamList — typed route params for every screen.
 // Angular equivalent: typed route data in Routes[].
@@ -26,7 +27,10 @@ export type RootStackParamList = {
   Splash: undefined;
   Auth: undefined;
   Home: {playerName: string; playerAvatar: string};
-  GameSelect: undefined;
+  GameSelect: {
+  playerName: string;
+  playerAvatar: string;
+  };
   Settings: undefined;
   Help: undefined;
   Leaderboard: undefined;
@@ -34,7 +38,12 @@ export type RootStackParamList = {
   TicTacToe: {
     playerName: string;
     playerAvatar: string;
+    difficulty: 'easy' | 'medium' | 'hard';
   };
+  TicTacToeModeSelect: {
+  playerName: string;
+  playerAvatar: string;
+};
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -62,6 +71,7 @@ export const AppNavigator = () => {
         />
         <Stack.Screen name="GameSelect" component={GameSelectScreen} />
         <Stack.Screen name="TicTacToe" component={GameScreen} />
+        <Stack.Screen name="TicTacToeModeSelect" component={ModeSelectScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Help" component={HelpScreen} />
         <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />

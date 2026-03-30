@@ -48,15 +48,20 @@ export const createGuestPlayer1 = (
   color,
 });
 
-// Creates the BotPlayer.
-// color is passed in from the screen via useTheme().
-export const createBotPlayer = (color: string): BotPlayer => ({
+// Creates the BotPlayer with the difficulty selected by the player.
+// difficulty is passed from the mode select screen through the game screen.
+// Defaults to TTT_CONFIG.defaultBotDifficulty if not provided.
+export const createBotPlayer = (
+  color: string,
+  // Optional — defaults to game config value if not passed.
+  difficulty: 'easy' | 'medium' | 'hard' = TTT_CONFIG.defaultBotDifficulty,
+): BotPlayer => ({
   type: 'bot',
   id: 'player2',
   name: APP_CONFIG.botName,
   avatar: TTT_CONFIG.botAvatar,
   color,
-  difficulty: TTT_CONFIG.defaultBotDifficulty,
+  difficulty,
 });
 
 // Creates the full initial GameState when the game starts.

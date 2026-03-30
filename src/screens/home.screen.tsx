@@ -54,10 +54,10 @@ export const HomeScreen = () => {
       <View style={styles.menu}>
 
         <AppButton
-          label={t.home.play}
-          onPress={() => navigation.navigate('GameSelect')}
-          style={styles.menuButton}
-        />
+  label={t.home.play}
+  onPress={() => navigation.navigate('GameSelect', { playerName, playerAvatar })}
+  style={styles.menuButton}
+/>
 
         <AppButton
           label={t.home.settings}

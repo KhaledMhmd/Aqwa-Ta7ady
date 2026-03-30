@@ -98,6 +98,16 @@ export const en: Translations = {
     home: 'Home',
   },
 
+  modeSelect: {
+  title: 'Choose Difficulty',
+  easy: 'Easy',
+  medium: 'Medium',
+  hard: 'Hard',
+  vsBot: 'vs Bot',
+  vsFriend: 'vs Friend',
+  difficultyTitle: 'Select Difficulty',
+},
+
   leaderboard: {
     title: 'Leaderboards',
     comingSoonMessage: 'Coming soon. Get ready to compete!',

@@ -101,6 +101,16 @@ export const ar: Translations = {
     home: 'الرئيسية',
   },
 
+  modeSelect: {
+  title: 'اختر المستوى',
+  easy: 'سهل',
+  medium: 'متوسط',
+  hard: 'صعب',
+  vsBot: 'ضد الكمبيوتر',
+  vsFriend: 'ضد صديق',
+  difficultyTitle: 'اختر المستوى',
+},
+
   leaderboard: {
     title: 'المتصدرون',
     comingSoonMessage: 'قريباً. استعد للمنافسة!',
