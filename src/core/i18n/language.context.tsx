@@ -93,30 +93,36 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   // effect after React Native reinitialises the layout engine.
   // Angular equivalent: changing the document dir attribute and reloading.
   const setLanguage = async (lang: Language) => {
+  try {
+    // Save the new language preference to AsyncStorage.
+    await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+
+    // Update in-memory state immediately for visual feedback.
+    setLanguageState(lang);
+
+    // Apply RTL direction for the new language.
+    const isArabic = lang === 'ar';
+    I18nManager.allowRTL(isArabic);
+    I18nManager.forceRTL(isArabic);
+
+    // Try to reload the app using expo-updates.
+    // This works in production builds only.
+    // In development with Expo Go it throws an error which we catch below.
     try {
-      // Save the new language preference.
-      await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
-
-      // Update state so the UI shows the new language immediately
-      // before the restart (gives instant visual feedback).
-      setLanguageState(lang);
-
-      // Apply RTL direction for the new language.
-      const isArabic = lang === 'ar';
-      I18nManager.allowRTL(isArabic);
-      I18nManager.forceRTL(isArabic);
-
-      // Reload the app so RTL takes full effect.
-      // In development this reloads the JS bundle.
-      // In production this reloads the app from scratch.
       await Updates.reloadAsync();
-
-    } catch (error) {
-      // If reload fails (e.g. in web mode), log the error.
-      // The language will still switch visually without RTL flip.
-      console.error('Failed to set language or reload:', error);
+    } catch {
+      // Development mode — expo-updates reload is not available.
+      // The language switch still works visually in the current session.
+      // RTL layout flip will apply properly in a production build.
+      // No action needed here — the state update above already
+      // switched the translations throughout the app.
+      console.log('Dev mode: language switched without full restart. RTL will apply in production build.');
     }
-  };
+
+  } catch (error) {
+    console.error('Failed to set language:', error);
+  }
+};
 
   // Active translations — ar or en based on current language.
   const t = language === 'ar' ? ar : en;
