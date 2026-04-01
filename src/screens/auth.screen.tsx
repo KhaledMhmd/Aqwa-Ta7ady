@@ -7,7 +7,7 @@
 // ============================================================
 
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Alert, Image, Dimensions } from 'react-native';
+import { View, StyleSheet, TextInput, Alert, Image, Dimensions, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/app.navigator';
@@ -18,6 +18,8 @@ import { TTT_CONFIG } from '../games/tic-tac-toe/config/game.config';
 import { useTheme } from '../core/theme/theme.context';
 import { useLanguage } from '../core/i18n/language.context';
 import { THEME } from '../core/theme/theme.config';
+import CountryFlag from 'react-native-country-flag';
+
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 
@@ -53,24 +55,7 @@ const LOGO_SIZE = Math.min(width * 0.5, 200);
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
-      {/* ── LANGUAGE SWITCHER ─────────────────────────────── */}
-      {/* Two flag buttons at the top — tap to switch language */}
-      <View style={styles.languageRow}>
-        {/* Egyptian flag — switches to Arabic */}
-        <AppButton
-          label="🇪🇬"
-          onPress={() => setLanguage('ar')}
-          variant={language === 'ar' ? 'primary' : 'ghost'}
-          style={styles.flagButton}
-        />
-        {/* UK flag — switches to English */}
-        <AppButton
-          label="🇬🇧"
-          onPress={() => setLanguage('en')}
-          variant={language === 'en' ? 'primary' : 'ghost'}
-          style={styles.flagButton}
-        />
-      </View>
+
 
       {/* Logo image replaces the app name text. */}
 <Image
@@ -138,7 +123,36 @@ const LOGO_SIZE = Math.min(width * 0.5, 200);
         variant="ghost"
         style={styles.mainButton}
       />
+{/* ── LANGUAGE SWITCHER — bottom of screen ───────── */}
+{/* Uses TouchableOpacity instead of AppButton so flags
+    render as large clean emojis without button borders.
+    Angular equivalent: plain <button> with no styling. */}
+<View style={styles.languageRow}>
 
+  {/* Egyptian flag */}
+<TouchableOpacity
+  onPress={() => setLanguage('ar')}
+  style={[
+    styles.flagButton,
+    // Blue border when this language is active.
+    // Angular equivalent: [class.active]="language === 'ar'"
+    language === 'ar' && styles.activeFlagButton,
+  ] as any}
+>
+  <CountryFlag isoCode="EG" size={32} style={{ width: '100%', height: '100%', borderRadius: THEME.borderRadius.full }} />
+</TouchableOpacity>
+
+{/* UK flag */}
+<TouchableOpacity
+  onPress={() => setLanguage('en')}
+  style={[
+    styles.flagButton,
+    language === 'en' && styles.activeFlagButton,
+  ] as any}
+>
+  <CountryFlag isoCode="GB" size={32} style={{ width: '100%', height: '100%', borderRadius: THEME.borderRadius.full }} />
+</TouchableOpacity>
+</View>
     </View>
   );
 };
@@ -152,17 +166,34 @@ const styles = StyleSheet.create({
     gap: THEME.spacing.sm,
   },
   // Language switcher row — sits at the top of the screen.
-  languageRow: {
-    flexDirection: 'row',
-    gap: THEME.spacing.sm,
-    marginBottom: THEME.spacing.md,
-  },
-  // Flag buttons are square and compact.
-  flagButton: {
-    minWidth: 52,
-    minHeight: 44,
-    paddingHorizontal: THEME.spacing.sm,
-  },
+ // Language row — sits at the bottom of the screen.
+languageRow: {
+  flexDirection: 'row',
+  gap: THEME.spacing.md,
+  marginTop: THEME.spacing.lg,
+  justifyContent: 'center',
+},
+
+// Each flag button — circular tap target with subtle highlight.
+flagButton: {
+  width: 32,
+  height: 32,
+  borderRadius: THEME.borderRadius.full,
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  // Default border — invisible, keeps layout stable so
+  // adding the active border does not shift the layout.
+  borderWidth: 3,
+  borderColor: 'transparent',
+},
+
+// Active flag button — blue outline border.
+// Applied on top of flagButton when this language is selected.
+activeFlagButton: {
+  borderColor: '#378ADD',  // Blue — distinct from our green primary colour.
+  borderWidth: 3,
+},
   input: {
     width: '100%',
     height: 48,
