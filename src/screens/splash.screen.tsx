@@ -49,7 +49,7 @@ export const SplashScreen = () => {
         // require() loads a local asset from the project folder. 
         // The path is relative to this file's location.
         // Angular equivalent: <img [src]="logoPath"> with an assets path.
-        source={require('../../assets/appLogo.png')}
+        source={require('../../assets/appLogo2.png')}
         style={styles.logo}
         // resizeMode='contain' scales the image to fit within the bounds
         // without cropping or stretching it.

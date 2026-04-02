@@ -47,12 +47,15 @@ export type Translations = {
 
   // ── GAME SELECT SCREEN ──────────────────────────────────
   gameSelect: {
-    title: string;          // 'Choose a Game'
-    comingSoonGame: string;
-    hangman: string;
-    snakesAndLadders: string;
-    gridChallenge: string;
-  };
+  title: string;                    // 'Choose a Game'
+  comingSoonGame: string;           // Coming Soon alert message.
+  gridChallenge: string;            // Game title — 'Grid Challenge'.
+  gridChallengeDesc: string;        // Game description for the card.
+  snakesAndLadders: string;         // Game title — 'Snakes & Ladders'.
+  snakesAndLaddersDesc: string;     // Game description for the card.
+  hangman: string;                  // Game title — 'Hangman'.
+  hangmanDesc: string;              // Game description for the card.
+};
 
   // ── GAME SCREEN ─────────────────────────────────────────
   game: {

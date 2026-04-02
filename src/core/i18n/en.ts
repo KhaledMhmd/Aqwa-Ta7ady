@@ -39,13 +39,17 @@ export const en: Translations = {
     welcome: 'Welcome back,',
   },
 
-  gameSelect: {
-    title: 'Choose a Game',
-    comingSoonGame: 'This game will be available in a future update.',
-    hangman: 'Hangman',
-    snakesAndLadders: 'Snakes & Ladders',
-    gridChallenge: 'Grid Challenge'
-  },
+  // AFTER:
+gameSelect: {
+  title: 'Choose a Game',
+  comingSoonGame: 'This game will be available in a future update.',
+  gridChallenge: 'Grid Challenge',
+  gridChallengeDesc: 'Name a player who played for both clubs',
+  snakesAndLadders: 'Snakes & Ladders',
+  snakesAndLaddersDesc: 'Climb the pitch, dodge the red cards',
+  hangman: 'Hangman',
+  hangmanDesc: 'Guess the football legend before time runs out',
+},
 
   game: {
     yourTurn: 'Your turn',

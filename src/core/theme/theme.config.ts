@@ -1,13 +1,16 @@
+// ── React Native ──────────────────────────────────────
+
 // ============================================================
 // theme.config.ts
 // THE single source of truth for all visual design tokens.
 // Contains DARK_THEME and LIGHT_THEME colour palettes.
-// Both extracted from the Stitch design system:
-// Primary: #2ECC71 (green)
-// Secondary: #03B179 (teal green)
-// Tertiary/Warning: #FFE500 (yellow)
-// Neutral: #1A2421 (dark green-black)
-// To update colours in the future — edit DARK_THEME or LIGHT_THEME only.
+// Based on the "Neon Glistle" design system:
+// Primary: #6C63FF (purple/violet)
+// Secondary: #FF59D6 (hot pink)
+// Tertiary: #2CCBFF (cyan/sky blue)
+// Neutral: #F8F9FA (near-white)
+// Fonts: Plus Jakarta Sans (headlines), Be Vietnam Pro (body/labels)
+// To update colours — edit DARK_THEME or LIGHT_THEME only.
 // Nothing else in the codebase needs to change.
 // Angular equivalent: SCSS variables file with theme maps.
 // ============================================================
@@ -54,86 +57,100 @@ type ColorPalette = {
 };
 
 // ── DARK THEME ───────────────────────────────────────────────
-// Dark green-black backgrounds with bright green primary.
-// Extracted from Image 1 of the Stitch design system.
+// Deep dark backgrounds with neon purple/pink/cyan accents.
+// Extracted from Image 1 of the Neon Glistle design system.
 export const DARK_THEME: ColorPalette = {
   // Brand
-  primary: '#2ECC71',      // Bright green — main CTA buttons, active states.
-  primaryDark: '#27AE60',  // Darker green — pressed state of primary buttons.
-  secondary: '#03B179',    // Teal green — secondary buttons and accents.
-  tertiary: '#FFE500',     // Yellow — warnings, special highlights, tertiary actions.
+  primary: '#6C63FF',      // Purple/violet — main CTA buttons, active states.
+  primaryDark: '#5A52E0',  // Darker purple — pressed state of primary buttons.
+  secondary: '#FF59D6',    // Hot pink — secondary buttons and accents.
+  tertiary: '#2CCBFF',     // Cyan/sky blue — highlights, tertiary actions.
 
-  // Backgrounds — based on Neutral #1A2421 and its dark variations.
-  background: '#0F1A17',   // Darkest bg — main screen background.
-  surface: '#1A2421',      // Card/container bg — the Neutral colour from design.
-  surfaceLight: '#243028', // Input fields and inactive cells — slightly lighter than surface.
+  // Backgrounds — deep dark tones from the dark theme image.
+  background: '#0F0F1A',   // Deepest dark — main screen background.
+  surface: '#1A1A2E',      // Card/container bg — slightly lighter than background.
+  surfaceLight: '#252540',  // Input fields and inactive cells — lighter than surface.
 
   // Text — light text on dark backgrounds.
-  textPrimary: '#F0F4F2',  // Near-white — main readable text.
-  textSecondary: '#7A9188',// Muted green-grey — captions, labels, hints.
-  textDark: '#1A2421',     // Dark text — used on light/coloured backgrounds.
-  textOnPrimary: '#0F1A17',// Dark text shown on top of the green primary button.
+  textPrimary: '#F8F9FA',  // Near-white — the Neutral colour from design. Main readable text.
+  textSecondary: '#8888A4', // Muted purple-grey — captions, labels, hints.
+  textDark: '#0F0F1A',     // Dark text — used on light/coloured backgrounds.
+  textOnPrimary: '#FFFFFF', // White text shown on top of the purple primary button.
 
-  // Game colours — using design palette.
-  player1: '#2ECC71',      // Player 1 uses primary green.
-  player2: '#03B179',      // Player 2 uses secondary teal.
-  botColor: '#FFE500',     // Bot uses tertiary yellow — stands out clearly.
+  // Game colours — using neon palette for distinct player identification.
+  player1: '#6C63FF',      // Player 1 uses primary purple.
+  player2: '#2CCBFF',      // Player 2 uses tertiary cyan — clearly distinct from purple.
+  botColor: '#FF59D6',     // Bot uses secondary pink — stands out clearly.
 
   // Status colours.
-  success: '#2ECC71',      // Same as primary — green = correct answer.
-  error: '#E74C3C',        // Red — wrong answer, destructive actions.
-  warning: '#FFE500',      // Same as tertiary — yellow = caution/time low.
-  disabled: '#2D3F38',     // Very dark muted green — disabled state.
+  success: '#2CCBFF',      // Cyan — correct answer, positive states.
+  error: '#FF4757',        // Bright red — wrong answer, destructive actions.
+  warning: '#FFB84D',      // Amber/orange — caution states, time running low.
+  disabled: '#2A2A44',     // Very dark muted purple — disabled state.
 
   // Borders.
-  border: '#243028',       // Subtle dark border — matches surfaceLight.
-  borderLight: '#1E2B25',  // Very subtle border — barely visible separator.
+  border: '#252540',       // Subtle dark border — matches surfaceLight.
+  borderLight: '#1E1E36',  // Very subtle border — barely visible separator.
 
   // Overlays.
   modalOverlay: 'rgba(0,0,0,0.75)',     // Dark overlay behind modals.
-  comingSoon: 'rgba(15,26,23,0.85)',    // Dark green overlay for locked features.
+  comingSoon: 'rgba(15,15,26,0.85)',     // Dark overlay for locked features.
 };
 
 // ── LIGHT THEME ──────────────────────────────────────────────
-// Very light mint/grey-green backgrounds with dark green primary.
-// Extracted from Image 2 of the Stitch design system.
+// Light grey backgrounds with the same neon accents.
+// Extracted from Image 2 of the Neon Glistle design system.
 export const LIGHT_THEME: ColorPalette = {
-  // Brand — same green palette, used differently on light bg.
-  primary: '#2ECC71',      // Bright green — CTA buttons.
-  primaryDark: '#27AE60',  // Darker green — pressed state.
-  secondary: '#03B179',    // Teal green — secondary actions.
-  tertiary: '#FFE500',     // Yellow — warnings, highlights.
+  // Brand — same neon palette, used on light bg.
+  primary: '#6C63FF',      // Purple — CTA buttons.
+  primaryDark: '#5A52E0',  // Darker purple — pressed state.
+  secondary: '#FF59D6',    // Hot pink — secondary actions.
+  tertiary: '#2CCBFF',     // Cyan — highlights.
 
-  // Backgrounds — very light mint green tones from Image 2.
-  background: '#E8F0EC',   // Light mint — main screen background.
-  surface: '#F0F5F2',      // Slightly lighter — card/container background.
-  surfaceLight: '#FFFFFF', // White — input fields, active cells.
+  // Backgrounds — light grey tones from the light theme image.
+  background: '#E8E8EE',   // Light grey — main screen background.
+  surface: '#F0F0F5',      // Slightly lighter — card/container background.
+  surfaceLight: '#FFFFFF',  // White — input fields, active cells.
 
   // Text — dark text on light backgrounds.
-  textPrimary: '#1A2421',  // Dark neutral — main readable text (Neutral from design).
-  textSecondary: '#5A7268',// Medium green-grey — captions, labels, hints.
-  textDark: '#1A2421',     // Same as textPrimary — used on coloured backgrounds.
-  textOnPrimary: '#FFFFFF',// White text on top of the green primary button.
+  textPrimary: '#1A1A2E',  // Dark — main readable text.
+  textSecondary: '#6B6B8A', // Medium purple-grey — captions, labels, hints.
+  textDark: '#1A1A2E',     // Same as textPrimary — used on coloured backgrounds.
+  textOnPrimary: '#FFFFFF', // White text on top of the purple primary button.
 
-  // Game colours — same palette, works on light bg too.
-  player1: '#27AE60',      // Slightly darker green so it reads on light bg.
-  player2: '#03B179',      // Teal green — distinct from player 1.
-  botColor: '#B8860B',     // Darker yellow/gold — yellow is too light on light bg.
+  // Game colours — same neon palette, works on light bg too.
+  player1: '#5A52E0',      // Slightly darker purple so it reads on light bg.
+  player2: '#1BA8D9',      // Slightly darker cyan — distinct from player 1.
+  botColor: '#D94DB8',     // Slightly darker pink — readable on light backgrounds.
 
   // Status colours.
-  success: '#27AE60',      // Darker green for success on light bg.
-  error: '#E74C3C',        // Red — same in both themes.
-  warning: '#D4A800',      // Darker yellow — readable on light backgrounds.
-  disabled: '#B0C4BA',     // Light muted green — disabled on light bg.
+  success: '#1BA8D9',      // Darker cyan for success on light bg.
+  error: '#E84050',        // Red — similar in both themes.
+  warning: '#E6A040',      // Darker amber — readable on light backgrounds.
+  disabled: '#C8C8D8',     // Light muted purple-grey — disabled on light bg.
 
   // Borders.
-  border: '#C8D8D0',       // Subtle light border.
-  borderLight: '#DDE8E3',  // Very subtle border.
+  border: '#D0D0DE',       // Subtle light border.
+  borderLight: '#DCDCE8',  // Very subtle border.
 
   // Overlays.
-  modalOverlay: 'rgba(0,0,0,0.5)',      // Lighter overlay on light bg.
-  comingSoon: 'rgba(232,240,236,0.9)',  // Light green overlay for locked features.
+  modalOverlay: 'rgba(0,0,0,0.5)',       // Lighter overlay on light bg.
+  comingSoon: 'rgba(232,232,238,0.9)',    // Light overlay for locked features.
 };
+
+// ── FONT FAMILIES ────────────────────────────────────────────
+// Loaded in index.tsx via useFonts().
+// Use these constants everywhere instead of hardcoding font names.
+// Angular equivalent: CSS variables for font-family.
+export const FONTS = {
+  // Plus Jakarta Sans — used for headlines (h1, h2, h3).
+  headlineRegular: 'PlusJakartaSans-Regular',   // Headline regular weight.
+  headlineBold: 'PlusJakartaSans-Bold',         // Headline bold weight.
+
+  // Be Vietnam Pro — used for body text, captions, labels.
+  bodyRegular: 'BeVietnamPro-Regular',           // Body regular weight.
+  bodyBold: 'BeVietnamPro-Bold',                 // Body bold weight.
+} as const;
 
 // ── THEME STATIC VALUES ──────────────────────────────────────
 // These never change between themes.
@@ -144,37 +161,40 @@ export const THEME = {
 
   // Typography scale.
   fontSizes: {
-    xs: 10,
-    sm: 12,
-    md: 14,
-    lg: 16,
-    xl: 20,
-    xxl: 26,
-    xxxl: 36,
+    xs: 10,      // Smallest text — badges, tiny labels.
+    sm: 12,      // Small text — captions, helper text.
+    md: 14,      // Default body text size.
+    lg: 16,      // Slightly larger body — emphasized text.
+    xl: 20,      // Section titles, h3.
+    xxl: 26,     // Screen titles, h2.
+    xxxl: 36,    // Hero text, h1.
   },
 
-  // Font weights.
+  // Font weights — mapped to actual fontFamily strings.
+  // In React Native, fontWeight and fontFamily must match.
+  // You cannot use fontWeight: '700' with a Regular font file —
+  // you must use the Bold font file instead.
   fontWeights: {
-    regular: '400' as const,
-    bold: '700' as const,
+    regular: '400' as const,   // Used with *-Regular font files.
+    bold: '700' as const,      // Used with *-Bold font files.
   },
 
   // Spacing scale.
   spacing: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-    xxl: 48,
+    xs: 4,       // Tightest spacing — inline gaps.
+    sm: 8,       // Small gaps — between related elements.
+    md: 16,      // Default spacing — between sections.
+    lg: 24,      // Large gaps — major sections.
+    xl: 32,      // Extra large — screen padding.
+    xxl: 48,     // Largest — hero sections.
   },
 
   // Border radius scale.
   borderRadius: {
-    sm: 4,
-    md: 8,
-    lg: 16,
-    full: 999,
+    sm: 4,       // Subtle rounding — tags, badges.
+    md: 8,       // Default rounding — buttons, inputs.
+    lg: 16,      // Large rounding — cards, containers.
+    full: 999,   // Fully rounded — circles, pills.
   },
 
 } as const;

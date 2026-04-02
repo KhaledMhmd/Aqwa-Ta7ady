@@ -43,12 +43,15 @@ export const ar: Translations = {
   },
 
   gameSelect: {
-    title: 'اختر لعبة',
-    comingSoonGame: 'هذه اللعبة ستكون متاحة قريباً.',
-        hangman: 'خمن اللعيب',
-    snakesAndLadders: 'السلم و التعبان',
-    gridChallenge: 'اكس أوه'
-  },
+  title: 'اختر لعبة',
+  comingSoonGame: 'هذه اللعبة ستكون متاحة قريباً.',
+  gridChallenge: 'اكس أوه',
+  gridChallengeDesc: 'اذكر لاعب لعب في النادين',
+  snakesAndLadders: 'السلم و التعبان',
+  snakesAndLaddersDesc: 'اطلع السلم واحذر من التعبان',
+  hangman: 'خمن اللعيب',
+  hangmanDesc: 'خمن اللاعب قبل ما الوقت يخلص',
+},
 
   game: {
     yourTurn: 'دورك',

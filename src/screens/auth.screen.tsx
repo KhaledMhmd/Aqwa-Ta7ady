@@ -6,9 +6,9 @@
 // Angular equivalent: AuthComponent with language toggle.
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, StyleSheet, TextInput, Alert, Image, Dimensions, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/app.navigator';
 import { AppText } from '../core/components/app-text.component';
@@ -51,7 +51,11 @@ const LOGO_SIZE = Math.min(width * 0.5, 200);
   const onComingSoon = () => {
     Alert.alert(t.common.comingSoon, t.common.comingSoonMessage);
   };
-
+useFocusEffect(
+  useCallback(() => {
+    console.log(language); // Runs EVERY time this screen becomes visible.
+  }, [])
+);
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
@@ -59,7 +63,7 @@ const LOGO_SIZE = Math.min(width * 0.5, 200);
 
       {/* Logo image replaces the app name text. */}
 <Image
-  source={require('../../assets/appLogo.png')}
+  source={require('../../assets/appLogo2.png')}
   style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
   resizeMode="contain"
 />
@@ -81,7 +85,13 @@ const LOGO_SIZE = Math.min(width * 0.5, 200);
       />
 
       {/* Avatar selector */}
-      <AppText variant="caption" style={styles.avatarLabel}>
+      <AppText
+  variant="caption"
+  style={[
+    styles.avatarLabel,                              // Base styles — width + margin.
+    { textAlign: language === 'ar' ? 'right' : 'left' }, // Explicit direction based on active language.
+  ] as any}
+>
         {t.auth.chooseAvatar}
       </AppText>
 
@@ -204,7 +214,8 @@ activeFlagButton: {
     marginBottom: THEME.spacing.sm,
   },
   avatarLabel: {
-    alignSelf: 'flex-start',
+    width: '100%',
+    // alignSelf: 'flex-start',
     marginBottom: THEME.spacing.xs,
   },
   avatarRow: {

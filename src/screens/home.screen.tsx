@@ -40,7 +40,7 @@ const LOGO_SIZE = Math.min(width * 0.45, 180);
 
       {/* Logo replaces emoji + app name text. */}
 <Image
-  source={require('../../assets/appLogo.png')}
+  source={require('../../assets/appLogo2.png')}
   style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
   resizeMode="contain"
 /> 
