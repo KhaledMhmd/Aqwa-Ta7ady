@@ -90,10 +90,8 @@ export const GameCell = ({
         },
         isClaimed && !isWinningCell && { backgroundColor: colors.surfaceLight }, // Claimed cells slightly lighter.
         isWinningCell && {
-          backgroundColor: colors.surfaceLight,                      // Winning cells highlighted.
-          borderColor: colors.warning,                               // Gold/amber border.
-          borderWidth: 2,                                            // Thicker border for emphasis.
-        },
+  backgroundColor: colors.surfaceLight,
+},
       ]}
       onPress={onPress}
       disabled={isDisabled}
