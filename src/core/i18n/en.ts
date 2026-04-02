@@ -11,7 +11,7 @@ export const en: Translations = {
   common: {
     appName: 'Aqwa Ta7ady',
     appTagline: 'The Ultimate Football Challenge',
-    back: '← Back',
+    back: '←',
     comingSoon: 'Coming Soon',
     comingSoonMessage: 'This feature will be available in a future update.',
     ok: 'OK',
@@ -52,7 +52,7 @@ gameSelect: {
 },
 
   game: {
-    yourTurn: 'Your turn',
+    yourTurn: 'Your Turn',
     thinking: 'Thinking...',
     vsLabel: 'VS',
     endLabel: 'END',

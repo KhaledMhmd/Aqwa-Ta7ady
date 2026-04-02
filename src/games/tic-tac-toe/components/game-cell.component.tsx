@@ -1,63 +1,69 @@
+// ── React Native ──────────────────────────────────────
+
 // ============================================================
 // game-cell.component.tsx
 // A single pressable cell in the tic-tac-toe grid.
+// Size is passed from GameBoard to guarantee alignment with headers.
 // Uses useTheme() for dynamic colours.
 // Angular equivalent: GameCellComponent with @Input() and @Output().
 // ============================================================
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';                   // React core + hooks.
 import {
-  TouchableOpacity,
-  View,
-  StyleSheet,
-  Animated,
-  Dimensions,
+  TouchableOpacity,                                                  // Pressable wrapper.
+  View,                                                              // Container element.
+  StyleSheet,                                                        // Style creation.
+  Animated,                                                          // Animation API.
 } from 'react-native';
-import { CellState } from '../types/game.types';
-import { AppAvatar } from '../../../core/components/app-avatar.component';
-import { useTheme } from '../../../core/theme/theme.context';
-import { THEME } from '../../../core/theme/theme.config';
-import { TTT_CONFIG } from '../config/game.config';
+import { CellState } from '../types/game.types';                    // Cell state type.
+import { AppAvatar } from '../../../core/components/app-avatar.component'; // Avatar component.
+import { useTheme } from '../../../core/theme/theme.context';       // Dynamic colours.
+import { THEME } from '../../../core/theme/theme.config';           // Static values.
 
-const { width } = Dimensions.get('window');
-const CELL_SIZE = (width - 80) / TTT_CONFIG.gridSize;
-
+// Props type — what GameBoard passes in.
 type Props = {
-  cellState: CellState;
-  onPress: () => void;
-  isGameOver: boolean;
-  isWinningCell: boolean;
+  cellState: CellState;                                              // Who owns this cell + used answer.
+  cellSize: number;                                                  // Width and height — from GameBoard.
+  onPress: () => void;                                               // Tap handler.
+  isGameOver: boolean;                                               // Whether the game has ended.
+  isWinningCell: boolean;                                            // Whether this cell is in the winning line.
 };
 
 export const GameCell = ({
   cellState,
+  cellSize,
   onPress,
   isGameOver,
   isWinningCell,
 }: Props) => {
-  const { colors } = useTheme();
+  const { colors } = useTheme();                                     // Dynamic theme colours.
 
+  // Is this cell claimed by a player?
   const isClaimed = cellState.claimedBy !== null;
 
-  // Scale animation — plays when cell is claimed.
+  // Scale animation — plays when cell is first claimed.
+  // Animated.Value(0) starts invisible, springs to 1 (full size).
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
-  // Pulse animation — plays on winning cells.
+  // Pulse animation — plays on winning cells after game ends.
+  // Animated.Value(1) starts at normal size, pulses between 1 and 1.1.
   const winAnim = useRef(new Animated.Value(1)).current;
 
-  // Animate scale-in when cell gets claimed.
+  // Trigger scale-in animation when cell gets claimed.
+  // Angular equivalent: a CSS transition triggered by [class.claimed].
   useEffect(() => {
     if (isClaimed) {
       Animated.spring(scaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 100,
-        friction: 8,
+        toValue: 1,                                                  // Scale to full size.
+        useNativeDriver: true,                                       // Run on native thread for performance.
+        tension: 100,                                                // Spring stiffness.
+        friction: 8,                                                 // Spring damping.
       }).start();
     }
   }, [isClaimed]);
 
-  // Animate pulse on winning cells.
+  // Trigger pulse animation on winning cells.
+  // Angular equivalent: a CSS @keyframes pulse animation.
   useEffect(() => {
     if (isWinningCell) {
       Animated.loop(
@@ -69,29 +75,41 @@ export const GameCell = ({
     }
   }, [isWinningCell]);
 
+  // Disable the cell if the game is over or it's already claimed.
   const isDisabled = isGameOver || isClaimed;
 
   return (
     <TouchableOpacity
       style={[
         styles.cell,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-        isClaimed && !isWinningCell && { backgroundColor: colors.surfaceLight },
-        isWinningCell && { backgroundColor: colors.surfaceLight, borderColor: colors.warning, borderWidth: 2 },
+        {
+          width: cellSize,                                           // Size from GameBoard — matches column header width.
+          height: cellSize,                                          // Square cell.
+          backgroundColor: colors.surface,                           // Default cell background.
+          borderColor: colors.border,                                // Subtle border.
+        },
+        isClaimed && !isWinningCell && { backgroundColor: colors.surfaceLight }, // Claimed cells slightly lighter.
+        isWinningCell && {
+          backgroundColor: colors.surfaceLight,                      // Winning cells highlighted.
+          borderColor: colors.warning,                               // Gold/amber border.
+          borderWidth: 2,                                            // Thicker border for emphasis.
+        },
       ]}
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.7}
+      activeOpacity={0.7}                                            // Slight dim on press.
     >
       {isClaimed ? (
+        // Claimed cell — show the player's avatar with animation.
         <Animated.View style={{ transform: [{ scale: isWinningCell ? winAnim : scaleAnim }] }}>
           <AppAvatar
-            avatar={cellState.claimedBy!.avatar}
-            color={cellState.claimedBy!.color}
-            size="md"
+            avatar={cellState.claimedBy!.avatar}                     // Player's emoji avatar.
+            color={cellState.claimedBy!.color}                       // Player's theme colour.
+            size="md"                                                // Medium avatar size.
           />
         </Animated.View>
       ) : (
+        // Empty cell — show a small dot as a tap target hint.
         <View style={[styles.emptyDot, { backgroundColor: colors.border }]} />
       )}
     </TouchableOpacity>
@@ -99,16 +117,17 @@ export const GameCell = ({
 };
 
 const styles = StyleSheet.create({
+  // Cell base styles — border and centering.
+  // Width and height are set dynamically via cellSize prop.
   cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderWidth: 1,                                    // Subtle border around each cell.
+    justifyContent: 'center',                          // Center avatar vertically.
+    alignItems: 'center',                              // Center avatar horizontally.
   },
+  // Small dot shown in empty cells — visual hint that the cell is tappable.
   emptyDot: {
-    width: 6,
+    width: 6,                                          // Tiny dot.
     height: 6,
-    borderRadius: 3,
+    borderRadius: 3,                                   // Perfect circle.
   },
 });

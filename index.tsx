@@ -25,6 +25,9 @@ import {
   BeVietnamPro_700Bold,                                  // Bold weight — used for bold body text.
 } from '@expo-google-fonts/be-vietnam-pro';
 import { ActivityIndicator, View } from 'react-native';  // Loading spinner while fonts load.
+import { Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins'; // English font.
+import { Cairo_400Regular, Cairo_700Bold } from '@expo-google-fonts/cairo';       // Arabic font.
+import { Bungee_400Regular } from '@expo-google-fonts/bungee';  
 
 // Root component — loads fonts, then wraps the app with providers.
 // Angular equivalent: APP_INITIALIZER that waits for fonts to load
@@ -35,10 +38,15 @@ const App = () => {
   // Once true, the fonts are ready to use in any style.
   // Angular equivalent: no direct equivalent — browsers handle font loading natively.
   const [fontsLoaded] = useFonts({
-    'PlusJakartaSans-Regular': PlusJakartaSans_400Regular,  // Maps to fontFamily: 'PlusJakartaSans-Regular'.
-    'PlusJakartaSans-Bold': PlusJakartaSans_700Bold,        // Maps to fontFamily: 'PlusJakartaSans-Bold'.
-    'BeVietnamPro-Regular': BeVietnamPro_400Regular,        // Maps to fontFamily: 'BeVietnamPro-Regular'.
-    'BeVietnamPro-Bold': BeVietnamPro_700Bold,              // Maps to fontFamily: 'BeVietnamPro-Bold'.
+    // 'PlusJakartaSans-Regular': PlusJakartaSans_400Regular,  // Maps to fontFamily: 'PlusJakartaSans-Regular'.
+    // 'PlusJakartaSans-Bold': PlusJakartaSans_700Bold,        // Maps to fontFamily: 'PlusJakartaSans-Bold'.
+    // 'BeVietnamPro-Regular': BeVietnamPro_400Regular,        // Maps to fontFamily: 'BeVietnamPro-Regular'.
+    // 'BeVietnamPro-Bold': BeVietnamPro_700Bold,
+    'Poppins-Regular': Poppins_400Regular,     // fontFamily: 'Poppins-Regular'
+    'Poppins-Bold': Poppins_700Bold,           // fontFamily: 'Poppins-Bold'
+    'Cairo-Regular': Cairo_400Regular,         // fontFamily: 'Cairo-Regular'
+    'Cairo-Bold': Cairo_700Bold,               // fontFamily: 'Cairo-Bold'
+    'Bungee': Bungee_400Regular,               // fontFamily: 'Bungee'              // Maps to fontFamily: 'BeVietnamPro-Bold'.
   });
 
   // Show a loading spinner while fonts are still loading.

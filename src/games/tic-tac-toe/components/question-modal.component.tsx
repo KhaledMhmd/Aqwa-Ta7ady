@@ -1,102 +1,68 @@
+// ── React Native ──────────────────────────────────────
+
 // ============================================================
 // question-modal.component.tsx
 // Modal shown when a player taps a cell.
-// Timer counts down (or shows ∞), pauses on background.
+// Displays the question (two clubs) and collects the answer.
+// Timer is NO LONGER managed here — it lives in game.hook.ts
+// and displays on the turn indicator instead.
 // Uses useTheme() for dynamic colours.
 // Angular equivalent: MatDialog component.
 // ============================================================
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';        // React core + hooks.
 import {
-  Modal,
-  View,
-  StyleSheet,
-  TextInput,
-  Animated,
-  AppState,
-  AppStateStatus,
-  KeyboardAvoidingView,
-  Platform,
+  Modal,                                                             // Full-screen overlay.
+  View,                                                              // Container.
+  StyleSheet,                                                        // Styles.
+  TextInput,                                                         // Text input for the answer.
+  Animated,                                                          // Shake animation.
+  KeyboardAvoidingView,                                              // Pushes content above keyboard.
+  Platform,                                                          // iOS vs Android detection.
 } from 'react-native';
-import { CellQuestion } from '../types/game.types';
-import { AppText } from '../../../core/components/app-text.component';
-import { AppButton } from '../../../core/components/app-button.component';
-import { useTheme } from '../../../core/theme/theme.context';
-import { THEME } from '../../../core/theme/theme.config';
-import { TTT_CONFIG } from '../config/game.config';
-import { useLanguage } from '../../../core/i18n/language.context';
+import { CellQuestion } from '../types/game.types';                  // Question type.
+import { AppText } from '../../../core/components/app-text.component'; // Themed text.
+import { AppButton } from '../../../core/components/app-button.component'; // Themed button.
+import { useTheme } from '../../../core/theme/theme.context';       // Dynamic colours.
+import { THEME } from '../../../core/theme/theme.config';           // Static spacing.
+import { useLanguage } from '../../../core/i18n/language.context';  // Translations.
 
+// Props type — what GameScreen passes in.
+// timeLimitEnabled and timer state are REMOVED — timer lives in game.hook.ts now.
 type Props = {
-  isVisible: boolean;
-  question: CellQuestion | null;
-  isWrongAnswer: boolean;
-  isAlreadyUsed: boolean;    // Add this line.
-  timeLimitEnabled: boolean;
-  onSubmit: (answer: string) => void;
-  onClose: () => void;
+  isVisible: boolean;                                                // Controls modal visibility.
+  question: CellQuestion | null;                                     // The question for the selected cell.
+  isWrongAnswer: boolean;                                            // Triggers shake animation.
+  isAlreadyUsed: boolean;                                            // Shows "already used" message.
+  onSubmit: (answer: string) => void;                                // Called when player presses Submit.
+  onClose: () => void;                                               // Called when player presses Skip.
 };
 
 export const QuestionModal = ({
   isVisible,
   question,
   isWrongAnswer,
-  isAlreadyUsed,    // Add this line.
-  timeLimitEnabled,
+  isAlreadyUsed,
   onSubmit,
   onClose,
 }: Props) => {
-  const { colors } = useTheme();
-  const { t } = useLanguage();
-  const [answer, setAnswer] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<number>(TTT_CONFIG.turnTimeLimitSeconds);
-  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+  const { colors } = useTheme();                                     // Dynamic theme colours.
+  const { t } = useLanguage();                                       // Translations.
+  const [answer, setAnswer] = useState<string>('');                  // Current text input value.
 
+  // Shake animation ref — triggers horizontal shake on wrong answer.
   const shakeAnim = useRef(new Animated.Value(0)).current;
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
-  // Reset state when modal opens or closes.
+  // Reset answer text when modal opens or closes.
+  // Angular equivalent: ngOnChanges watching isVisible.
   useEffect(() => {
     if (isVisible) {
-      setAnswer('');
-      setTimeLeft(TTT_CONFIG.turnTimeLimitSeconds);
-      setIsTimerRunning(timeLimitEnabled);
-    } else {
-      setIsTimerRunning(false);
-      clearTimerInterval();
+      setAnswer('');                                                  // Clear previous answer on open.
     }
   }, [isVisible]);
 
-  // Countdown timer.
-  useEffect(() => {
-    if (!isTimerRunning || !timeLimitEnabled) return;
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearTimerInterval();
-          onClose();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearTimerInterval();
-  }, [isTimerRunning, timeLimitEnabled]);
-
-  // Pause/resume timer based on app state.
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
-      if (appStateRef.current === 'active' && nextAppState.match(/inactive|background/)) {
-        setIsTimerRunning(false);
-      } else if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
-        if (isVisible && timeLimitEnabled) setIsTimerRunning(true);
-      }
-      appStateRef.current = nextAppState;
-    });
-    return () => subscription.remove();
-  }, [isVisible, timeLimitEnabled]);
-
-  // Shake animation on wrong answer.
+  // Trigger shake animation when a wrong answer is submitted.
+  // Angular equivalent: a CSS animation triggered by [class.shake].
   useEffect(() => {
     if (isWrongAnswer) {
       Animated.sequence([
@@ -109,58 +75,36 @@ export const QuestionModal = ({
     }
   }, [isWrongAnswer]);
 
-  const clearTimerInterval = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
+  // Handles the Submit button press.
+  // Ignores empty answers.
   const handleSubmit = () => {
-    if (answer.trim().length === 0) return;
-    onSubmit(answer);
+    if (answer.trim().length === 0) return;                          // Don't submit empty answers.
+    onSubmit(answer);                                                // Pass answer to game.hook.ts.
   };
 
-  const getTimerColor = (): string => {
-    if (timeLeft > 20) return colors.success;
-    if (timeLeft > 10) return colors.warning;
-    return colors.error;
-  };
-
+  // Don't render anything if there's no question loaded.
   if (!question) return null;
 
   return (
     <Modal
-      visible={isVisible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onClose}
+      visible={isVisible}                                            // Show/hide the modal.
+      transparent={true}                                             // Background is semi-transparent.
+      animationType="slide"                                          // Slides up from the bottom.
+      onRequestClose={onClose}                                       // Android back button closes modal.
     >
-            <View style={[styles.overlay, { backgroundColor: colors.modalOverlay }]}>
+      <View style={[styles.overlay, { backgroundColor: colors.modalOverlay }]}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}   // iOS pushes up, Android resizes.
           style={styles.keyboardView}
         >
           <View style={[styles.card, { backgroundColor: colors.surface, borderTopColor: colors.primary }]}>
 
-            {/* Timer */}
-            <View style={styles.timerContainer}>
-              {timeLimitEnabled ? (
-                <AppText variant="h2" style={[styles.timerText, { color: getTimerColor() }] as any}>
-                  {timeLeft}
-                </AppText>
-              ) : (
-                <AppText variant="h2" style={{ color: colors.textSecondary, fontSize: 32 }}>
-                  ∞
-                </AppText>
-              )}
-            </View>
-
-            {/* Question */}
+            {/* Question — "Name a player who played for both" */}
             <AppText variant="caption" style={{ textAlign: 'center', color: colors.textSecondary }}>
               {t.game.nameAPlayer}
             </AppText>
 
+            {/* Club names — "Arsenal & Chelsea" */}
             <View style={styles.clubsRow}>
               <AppText variant="h3" style={{ color: colors.primary, textAlign: 'center' }}>
                 {question.rowHeader.label}
@@ -171,53 +115,46 @@ export const QuestionModal = ({
               </AppText>
             </View>
 
-            {/* Answer input */}
+            {/* Answer input with shake animation */}
             <Animated.View style={[styles.inputContainer, { transform: [{ translateX: shakeAnim }] }]}>
               <TextInput
                 style={[styles.input, {
-                  backgroundColor: colors.surfaceLight,
-                  color: colors.textPrimary,
-                  borderColor: isWrongAnswer ? colors.error : colors.border,
+                  backgroundColor: colors.surfaceLight,              // Input background from theme.
+                  color: colors.textPrimary,                         // Input text colour from theme.
+                  borderColor: isWrongAnswer ? colors.error : colors.border, // Red border on wrong answer.
                 }]}
-                placeholder={t.game.placeholder}
-                placeholderTextColor={colors.textSecondary}
-                value={answer}
-                onChangeText={setAnswer}
-                autoFocus={true}
-                autoCapitalize="words"
-                onSubmitEditing={handleSubmit}
-                returnKeyType="done"
+                placeholder={t.game.placeholder}                     // "Type player name..."
+                placeholderTextColor={colors.textSecondary}          // Muted placeholder colour.
+                value={answer}                                       // Controlled input value.
+                onChangeText={setAnswer}                             // Update state on every keystroke.
+                autoFocus={true}                                     // Focus input immediately when modal opens.
+                autoCapitalize="words"                               // Capitalise first letter of each word.
+                onSubmitEditing={handleSubmit}                       // Submit on keyboard "Done" press.
+                returnKeyType="done"                                 // Show "Done" on keyboard.
               />
-              {/* Wrong answer message — shown when answer does not match. */}
-{isWrongAnswer && (
-  <AppText
-    variant="caption"
-    style={{ color: colors.error, textAlign: 'center' }}
-  >
-    {t.game.wrongAnswer}
-  </AppText>
-)}
 
-{/* Already used message — shown when answer is correct but
-    already used on another cell. Player keeps their turn
-    and can try a different name. */}
-{isAlreadyUsed && (
-  <AppText
-    variant="caption"
-    style={{ color: colors.warning, textAlign: 'center' }}
-  >
-    {t.game.alreadyUsed}
-  </AppText>
-)}
+              {/* Wrong answer message */}
+              {isWrongAnswer && (
+                <AppText variant="caption" style={{ color: colors.error, textAlign: 'center' }}>
+                  {t.game.wrongAnswer}
+                </AppText>
+              )}
+
+              {/* Already used message */}
+              {isAlreadyUsed && (
+                <AppText variant="caption" style={{ color: colors.warning, textAlign: 'center' }}>
+                  {t.game.alreadyUsed}
+                </AppText>
+              )}
             </Animated.View>
 
-            {/* Buttons */}
+            {/* Buttons — Skip and Submit */}
             <View style={styles.buttonsRow}>
               <AppButton label={t.game.skip} onPress={onClose} variant="ghost" style={styles.skipButton} />
               <AppButton
                 label={t.game.submit}
                 onPress={handleSubmit}
-                disabled={answer.trim().length === 0}
+                disabled={answer.trim().length === 0}                // Disable when input is empty.
                 style={styles.submitButton}
               />
             </View>
@@ -230,48 +167,51 @@ export const QuestionModal = ({
 };
 
 const styles = StyleSheet.create({
+  // Semi-transparent background — covers the entire screen behind the modal.
   overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    flex: 1,                                           // Full screen.
+    justifyContent: 'flex-end',                        // Modal card sits at the bottom.
   },
+  // Keyboard avoiding wrapper — full width.
   keyboardView: {
     width: '100%',
   },
+  // Modal card — the white/dark panel with the question and input.
   card: {
-    borderTopLeftRadius: THEME.borderRadius.lg,
+    borderTopLeftRadius: THEME.borderRadius.lg,        // 16 — rounded top corners.
     borderTopRightRadius: THEME.borderRadius.lg,
-    paddingHorizontal: THEME.spacing.xl,
-    paddingVertical: THEME.spacing.lg,
-    gap: THEME.spacing.md,
-    borderTopWidth: 3,
+    paddingHorizontal: THEME.spacing.xl,               // 32 — generous side padding.
+    paddingVertical: THEME.spacing.lg,                 // 24 — vertical padding.
+    gap: THEME.spacing.md,                             // 16 — space between sections.
+    borderTopWidth: 3,                                 // Coloured top accent line.
   },
-  timerContainer: {
-    alignItems: 'center',
-  },
-  timerText: {
-    fontWeight: THEME.fontWeights.bold,
-  },
+  // Club names row — "Arsenal & Chelsea" side by side.
   clubsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: THEME.spacing.sm,
-    flexWrap: 'wrap',
+    flexDirection: 'row',                              // Side by side.
+    alignItems: 'center',                              // Vertically centered.
+    justifyContent: 'center',                          // Horizontally centered.
+    gap: THEME.spacing.sm,                             // 8 — gap between club names.
+    flexWrap: 'wrap',                                  // Wrap to next line if names are long.
   },
+  // Input container — holds the TextInput and error messages.
   inputContainer: {
-    gap: THEME.spacing.xs,
+    gap: THEME.spacing.xs,                             // 4 — gap between input and error text.
   },
+  // Text input field.
   input: {
-    height: 48,
-    borderRadius: THEME.borderRadius.md,
-    paddingHorizontal: THEME.spacing.md,
-    fontSize: THEME.fontSizes.md,
-    borderWidth: 1,
+    height: 48,                                        // Fixed height for consistent sizing.
+    borderRadius: THEME.borderRadius.md,               // 8 — rounded corners.
+    paddingHorizontal: THEME.spacing.md,               // 16 — inner horizontal padding.
+    fontSize: THEME.fontSizes.md,                      // 14 — default text size.
+    borderWidth: 1,                                    // Subtle border.
   },
+  // Buttons row — Skip and Submit side by side.
   buttonsRow: {
-    flexDirection: 'row',
-    gap: THEME.spacing.sm,
+    flexDirection: 'row',                              // Side by side.
+    gap: THEME.spacing.sm,                             // 8 — gap between buttons.
   },
+  // Skip button takes 1/3 of the row.
   skipButton: { flex: 1 },
+  // Submit button takes 2/3 of the row.
   submitButton: { flex: 2 },
 });

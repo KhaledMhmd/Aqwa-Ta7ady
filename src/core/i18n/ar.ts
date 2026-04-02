@@ -14,7 +14,7 @@ export const ar: Translations = {
   common: {
     appName: 'أقوى تحدي',
     appTagline: 'التحدي الكروي الأقوى',
-    back: '→ رجوع',
+    back: '←',
     comingSoon: 'قريباً',
     comingSoonMessage: 'هذه الميزة ستكون متاحة في تحديث قادم.',
     ok: 'حسناً',
@@ -56,7 +56,7 @@ export const ar: Translations = {
   game: {
     yourTurn: 'دورك',
     thinking: 'يفكر...',
-    vsLabel: 'ضد',
+    vsLabel: 'VS',
     endLabel: 'انتهت',
     nameAPlayer: 'اذكر لاعباً لعب في كلا النادين',
     andConnector: 'و',

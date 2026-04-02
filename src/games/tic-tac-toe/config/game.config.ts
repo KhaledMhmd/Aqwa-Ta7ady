@@ -1,43 +1,5 @@
-// // ============================================================
-// // game.config.ts
-// // THE single source of truth for tic-tac-toe specific config.
-// // Want to rename the game? Change it here only.
-// // Want to change the grid size? Change it here only.
-// // Angular equivalent: a game-specific environment/constants file.
-// // ============================================================
+// ── React Native ──────────────────────────────────────
 
-// export const TTT_CONFIG = {
-
-//   // The display name of this game — shown on the game select screen
-//   // and the game screen header.
-//   name: 'Grid Challenge',
-
-//   // Short description shown on the game select screen card.
-//   description: 'Name a player who played for both clubs',
-
-//   // The grid is always 3x3 for tic-tac-toe.
-//   // Stored here so if we ever want a 4x4 variant,
-//   // it is one number change instead of hunting through components.
-//   gridSize: 3,
-
-//   // How many seconds a player has to answer when time limit is enabled.
-//   // Only used when AppSettings.gameRules.timeLimitEnabled is true.
-//   turnTimeLimitSeconds: 45,
-
-//   // Bot difficulty for Phase 1.
-//   // 'easy' means the bot picks a random empty cell and always
-//   // submits the first accepted answer for that cell.
-//   defaultBotDifficulty: 'easy' as const,
-
-//   // The emoji shown as the bot's avatar on the board.
-//   botAvatar: '🤖',
-
-//   // The default avatars a player can choose from on the setup screen.
-//   // Phase 1: players pick from this list.
-//   // Phase 2+: players can upload a custom avatar.
-//   availableAvatars: ['⚽', '🦁', '🔥', '⚡', '🎯', '👑', '🐉', '🌟'],
-
-// } as const;
 // ============================================================
 // game.config.ts
 // Single source of truth for tic-tac-toe specific config.
@@ -46,11 +8,27 @@
 // ============================================================
 
 export const TTT_CONFIG = {
+  // Display name of this game — shown on game select and game screen.
   name: 'Grid Challenge',
+
+  // Short description — shown on game select card.
   description: 'Name a player who played for both clubs',
+
+  // Grid is always 3x3. Stored here so a 4x4 variant is one change.
   gridSize: 3,
-  turnTimeLimitSeconds: 45,
+
+  // Seconds per TURN (not per answer). Timer starts when the turn begins,
+  // not when the player taps a cell. Covers both cell selection and answering.
+  // Increased from 45 to 60 to account for the extra thinking time needed.
+  // Only used when AppSettings.gameRules.timeLimitEnabled is true.
+  turnTimeLimitSeconds: 10,
+
+  // Bot difficulty for Phase 1.
   defaultBotDifficulty: 'easy' as const,
+
+  // Bot avatar emoji.
   botAvatar: '🤖',
+
+  // Default avatars a player can choose from on the auth screen.
   availableAvatars: ['⚽', '🦁', '🔥', '⚡', '🎯', '👑', '🐉', '🌟'],
 } as const;

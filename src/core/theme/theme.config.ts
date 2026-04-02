@@ -138,19 +138,51 @@ export const LIGHT_THEME: ColorPalette = {
   comingSoon: 'rgba(232,232,238,0.9)',    // Light overlay for locked features.
 };
 
+// ── React Native ──────────────────────────────────────
+
 // ── FONT FAMILIES ────────────────────────────────────────────
 // Loaded in index.tsx via useFonts().
-// Use these constants everywhere instead of hardcoding font names.
-// Angular equivalent: CSS variables for font-family.
-export const FONTS = {
-  // Plus Jakarta Sans — used for headlines (h1, h2, h3).
-  headlineRegular: 'PlusJakartaSans-Regular',   // Headline regular weight.
-  headlineBold: 'PlusJakartaSans-Bold',         // Headline bold weight.
+// English uses Poppins, Arabic uses Cairo, accent titles use Bungee.
+// Components call FONTS.get(language) to get the right font set.
+// Angular equivalent: CSS variables for font-family set by [lang] attribute.
 
-  // Be Vietnam Pro — used for body text, captions, labels.
-  bodyRegular: 'BeVietnamPro-Regular',           // Body regular weight.
-  bodyBold: 'BeVietnamPro-Bold',                 // Body bold weight.
-} as const;
+// FontSet defines the fonts available for one language.
+// Each component picks the right key: headline, body, or accent.
+type FontSet = {
+  headlineRegular: string;  // Headlines regular weight (h1, h2, h3).
+  headlineBold: string;     // Headlines bold weight.
+  bodyRegular: string;      // Body text, captions, labels.
+  bodyBold: string;         // Bold body text, button labels.
+  accent: string;           // Accent font — game titles, app name only.
+};
+
+// English font set — Poppins for everything, Bungee for accents.
+const EN_FONTS: FontSet = {
+  headlineRegular: 'Poppins-Regular',   // Poppins Regular 400.
+  headlineBold: 'Poppins-Bold',         // Poppins Bold 700.
+  bodyRegular: 'Poppins-Regular',       // Poppins Regular 400.
+  bodyBold: 'Poppins-Bold',             // Poppins Bold 700.
+  accent: 'Bungee',                     // Bungee — game titles only.
+};
+
+// Arabic font set — Cairo for everything, Bungee doesn't support Arabic
+// so accent falls back to Cairo Bold for Arabic titles.
+const AR_FONTS: FontSet = {
+  headlineRegular: 'Cairo-Regular',     // Cairo Regular 400.
+  headlineBold: 'Cairo-Bold',           // Cairo Bold 700.
+  bodyRegular: 'Cairo-Regular',         // Cairo Regular 400.
+  bodyBold: 'Cairo-Bold',              // Cairo Bold 700.
+  accent: 'Cairo-Bold',                // Bungee doesn't support Arabic — use Cairo Bold.
+};
+
+// FONTS.get(language) returns the correct font set for the active language.
+// Called in AppText and AppButton to pick the right fontFamily.
+// Angular equivalent: a service method that returns fonts based on active locale.
+export const FONTS = {
+  get: (language: 'ar' | 'en'): FontSet => {
+    return language === 'ar' ? AR_FONTS : EN_FONTS; // Arabic → Cairo, English → Poppins.
+  },
+};
 
 // ── THEME STATIC VALUES ──────────────────────────────────────
 // These never change between themes.

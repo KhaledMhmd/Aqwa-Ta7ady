@@ -21,7 +21,7 @@ import {
 
 import { useTheme } from '../theme/theme.context';         // Dynamic theme colours.
 import { THEME, FONTS } from '../theme/theme.config';      // Static sizes and font families.
-
+import { useLanguage } from '../i18n/language.context';
 // Props type — what the parent can pass in.
 // Angular equivalent: @Input() decorators.
 type Props = {
@@ -46,7 +46,8 @@ export const AppButton = ({
 
   // Get active colours from ThemeContext.
   const { colors } = useTheme();
-
+const { language } = useLanguage();
+const fonts = FONTS.get(language);
   // Determine container styles based on variant and state.
   // Angular equivalent: [ngClass] with conditional classes.
   const containerStyles = [
@@ -91,7 +92,7 @@ export const AppButton = ({
         />
       ) : (
         // Show label text when not loading.
-        <Text style={labelStyles as any}>{label}</Text>
+<Text style={[...labelStyles, { fontFamily: fonts.bodyBold }] as any}>{label}</Text>
       )}
     </TouchableOpacity>
   );
@@ -110,7 +111,6 @@ const styles = StyleSheet.create({
   // Button label text — Be Vietnam Pro Bold.
   label: {
     fontSize: THEME.fontSizes.md,                          // 14 — default text size.
-    fontFamily: FONTS.bodyBold,                            // Be Vietnam Pro Bold for button labels.
     letterSpacing: 0.5,                                    // Slight letter spacing for readability.
   },
 });

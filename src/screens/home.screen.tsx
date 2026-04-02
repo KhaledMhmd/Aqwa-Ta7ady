@@ -44,7 +44,7 @@ const LOGO_SIZE = Math.min(width * 0.45, 180);
   style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
   resizeMode="contain"
 /> 
-      <AppText variant="h3" style={{ color: colors.textSecondary }}>
+      <AppText variant="accent" style={{ color: colors.textSecondary }}>
           {t.home.welcome}
         </AppText>
   <AppText variant="h2" style={{ color: colors.primary }}>

@@ -11,11 +11,12 @@
 import React from 'react';
 import {
   View,
-  StyleSheet,
-  SafeAreaView,  // Respects the iPhone notch and status bar.
+  StyleSheet,  // Respects the iPhone notch and status bar.
                  // Equivalent to padding-top: env(safe-area-inset-top) in CSS.
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; // For iOS notch support.
+
 
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -67,6 +68,7 @@ const player2 = createBotPlayer(colors.botColor, difficulty);
     onAnswerSubmit,
     onModalClose,
     resetGame,
+    timeLeft
   } = useGame(player1, player2, settings);
 
   // Finds the winning cells to highlight on the board.
@@ -143,7 +145,7 @@ const showResultAlert = () => {
 
   return (
     // SafeAreaView prevents content from going behind the iPhone notch.
-    <SafeAreaView style={styles.safeArea}>
+<SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={styles.container}>
 
         {/* ── HEADER ────────────────────────────────────── */}
@@ -164,12 +166,14 @@ const showResultAlert = () => {
         </View>
 
         {/* ── TURN INDICATOR ────────────────────────────── */}
-        <TurnIndicator
-          player1={player1}
-          player2={player2}
-          currentPlayer={gameState.currentPlayer}
-          isGameOver={gameState.isGameOver}
-        />
+<TurnIndicator
+  player1={player1}
+  player2={player2}
+  currentPlayer={gameState.currentPlayer}
+  isGameOver={gameState.isGameOver}
+  timeLeft={timeLeft}
+  timeLimitEnabled={settings.gameRules.timeLimitEnabled}
+/>
 
         {/* ── GAME BOARD ────────────────────────────────── */}
         <GameBoard
@@ -186,7 +190,6 @@ const showResultAlert = () => {
   question={turnState.currentQuestion}
   isWrongAnswer={turnState.isWrongAnswer}
   isAlreadyUsed={turnState.isAlreadyUsed}  // Add this line.
-  timeLimitEnabled={settings.gameRules.timeLimitEnabled}
   onSubmit={onAnswerSubmit}
   onClose={onModalClose}
 />

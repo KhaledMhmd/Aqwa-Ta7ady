@@ -10,7 +10,7 @@ import { AppSettings } from '../types/settings.types';
 export const DEFAULT_SETTINGS: AppSettings = {
   gameRules: {
     stealCells: false,
-    timeLimitEnabled: false,
+    timeLimitEnabled: true,
   },
   appearance: {
     theme: 'dark',   // Dark mode on by default.
