@@ -7,11 +7,12 @@
 // Uses useGame hook for all game logic.
 // Uses useSettings hook for game rules (Steal Cells, Timer).
 // Passes win line type to GameBoard for the brush stroke overlay.
+// resetCount forces GameBoard to remount — replays intro animation.
 // Angular equivalent: a GameComponent that injects GameService
 // and SettingsService and orchestrates all child components.
 // ============================================================
 
-import React from 'react';                                          // React core — needed for JSX.
+import React, { useState } from 'react';                            // useState added for resetCount — forces GameBoard remount on reset.
 import {
   View,                                                              // Container element.
   StyleSheet,                                                        // Style creation.
@@ -45,8 +46,8 @@ type WinLineType =
   | 'diag-main' | 'diag-anti'                                       // Diagonal wins.
   | null;                                                            // No winner yet.
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'TicTacToe'>;
-type RoutePropType = RouteProp<RootStackParamList, 'TicTacToe'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'TicTacToe'>; // Typed navigation.
+type RoutePropType = RouteProp<RootStackParamList, 'TicTacToe'>;     // Typed route params.
 
 export const GameScreen = () => {
   const navigation = useNavigation<NavigationProp>();                // Navigate between screens.
@@ -55,25 +56,40 @@ export const GameScreen = () => {
   const { t } = useLanguage();                                       // Translations.
 
   // Destructure all three params — playerName, playerAvatar, and difficulty.
-  const { playerName, playerAvatar, difficulty } = route.params;
+  const { playerName, playerAvatar, difficulty } = route.params;     // Passed from ModeSelectScreen.
 
   // Create the player and bot objects using the factory functions.
-  const player1 = createGuestPlayer1(playerName, playerAvatar, colors.player1);
-  const player2 = createBotPlayer(colors.botColor, difficulty);
+  const player1 = createGuestPlayer1(playerName, playerAvatar, colors.player1); // Human player.
+  const player2 = createBotPlayer(colors.botColor, difficulty);      // Bot with chosen difficulty.
 
   // useSettings gives us the current app settings.
-  const { settings } = useSettings();
+  const { settings } = useSettings();                                // Steal cells, timer, dark mode.
+
+  // ── RESET COUNT — forces GameBoard remount on reset ─────
+  // When resetCount changes, the key prop on <GameBoard> changes.
+  // React destroys the old GameBoard and mounts a new one.
+  // This replays the intro animation on every "Play Again".
+  // Angular equivalent: toggling *ngIf to force component re-creation.
+  const [resetCount, setResetCount] = useState(0);                   // Starts at 0, increments on every reset.
 
   // useGame gives us the full game state and all actions.
   const {
-    gameState,
-    turnState,
-    timeLeft,
-    onCellPress,
-    onAnswerSubmit,
-    onModalClose,
-    resetGame,
+    gameState,                                                       // Board, winner, scores, etc.
+    turnState,                                                       // Modal state, selected cell, etc.
+    timeLeft,                                                        // Seconds remaining on the turn timer.
+    onCellPress,                                                     // Human taps a cell.
+    onAnswerSubmit,                                                  // Human submits an answer.
+    onModalClose,                                                    // Human dismisses modal.
+    resetGame,                                                       // Wipes all state for a new game.
   } = useGame(player1, player2, settings);
+
+  // ── WRAPPED RESET — increments counter then resets game ──
+  // Called instead of resetGame directly so the animation replays.
+  // Angular equivalent: a method that toggles *ngIf then calls gameService.reset().
+  const handleReset = () => {
+    setResetCount((prev) => prev + 1);                               // Increment counter — changes key — forces remount.
+    resetGame();                                                     // Reset all game state back to initial.
+  };
 
   // getWinLine returns both the winning cells AND the line type.
   // The cells are passed to GameBoard for highlighting.
@@ -101,7 +117,7 @@ export const GameScreen = () => {
       )
     );
 
-    return winLine || { cells: [], lineType: null };
+    return winLine || { cells: [], lineType: null };                 // Fallback if no line found.
   };
 
   // Cache the win line result so we don't recalculate it multiple times per render.
@@ -109,28 +125,28 @@ export const GameScreen = () => {
 
   // showResultAlert displays the result when the game ends.
   const showResultAlert = () => {
-    const winnerName = gameState.winner?.name ?? '';
+    const winnerName = gameState.winner?.name ?? '';                  // Winner's display name.
 
     const title = gameState.winType === 'line'
-      ? t.result.winsLine.replace('{name}', winnerName)
-      : t.result.winsPoints.replace('{name}', winnerName);
+      ? t.result.winsLine.replace('{name}', winnerName)              // "X wins by line!"
+      : t.result.winsPoints.replace('{name}', winnerName);           // "X wins by points!"
 
-    const lineMsg = t.result.lineMessage.replace('{name}', winnerName);
-    const score = `${t.result.finalScore}\n${player1.name}: ${gameState.cellCounts.player1} ${t.result.cells}\n${player2.name}: ${gameState.cellCounts.player2} ${t.result.cells}`;
+    const lineMsg = t.result.lineMessage.replace('{name}', winnerName); // Line win explanation.
+    const score = `${t.result.finalScore}\n${player1.name}: ${gameState.cellCounts.player1} ${t.result.cells}\n${player2.name}: ${gameState.cellCounts.player2} ${t.result.cells}`; // Score breakdown.
 
     const message = gameState.winType === 'line'
-      ? `${lineMsg}\n\n${score}`
-      : `${t.result.pointsMessage}\n\n${score}`;
+      ? `${lineMsg}\n\n${score}`                                     // Line win message + score.
+      : `${t.result.pointsMessage}\n\n${score}`;                    // Points win message + score.
 
     Alert.alert(title, message, [
-      { text: t.result.playAgain, onPress: resetGame },
+      { text: t.result.playAgain, onPress: handleReset },            // ← CHANGED: was resetGame, now handleReset to replay animation.
       {
         text: t.result.home,
-        onPress: () => navigation.navigate('Home', {
+        onPress: () => navigation.navigate('Home', {                 // Navigate back to home screen.
           playerName: player1.name,
           playerAvatar: player1.avatar,
         }),
-        style: 'cancel',
+        style: 'cancel',                                             // iOS: makes this button appear on the left.
       },
     ]);
   };
@@ -140,7 +156,7 @@ export const GameScreen = () => {
     if (gameState.isGameOver) {
       setTimeout(showResultAlert, 1200);                             // Delay so brush stroke animation plays first.
     }
-  }, [gameState.isGameOver]);
+  }, [gameState.isGameOver]);                                        // Only re-runs when isGameOver changes.
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -149,9 +165,9 @@ export const GameScreen = () => {
         {/* ── HEADER ────────────────────────────────────── */}
         <View style={[styles.header, { direction: 'ltr' }]}>
           <AppButton
-            label={t.common.back}
-            onPress={() => navigation.goBack()}
-            variant="ghost"
+            label={t.common.back}                                    // Translated "Back" text.
+            onPress={() => navigation.goBack()}                      // Go to previous screen.
+            variant="ghost"                                          // Ghost = no background.
             style={styles.backButton}
           />
           <AppText variant="h3" style={{ color: colors.primary }}>
@@ -162,32 +178,36 @@ export const GameScreen = () => {
 
         {/* ── TURN INDICATOR ────────────────────────────── */}
         <TurnIndicator
-          player1={player1}
-          player2={player2}
-          currentPlayer={gameState.currentPlayer}
-          isGameOver={gameState.isGameOver}
-          timeLeft={timeLeft}
-          timeLimitEnabled={settings.gameRules.timeLimitEnabled}
+          player1={player1}                                          // Player 1 object.
+          player2={player2}                                          // Player 2 / bot object.
+          currentPlayer={gameState.currentPlayer}                    // Who is playing now.
+          isGameOver={gameState.isGameOver}                           // Shows "END" vs "VS".
+          timeLeft={timeLeft}                                        // Seconds remaining on timer.
+          timeLimitEnabled={settings.gameRules.timeLimitEnabled}      // Whether timer is active.
         />
 
         {/* ── GAME BOARD ────────────────────────────────── */}
+        {/* key={resetCount} forces React to destroy and remount GameBoard */}
+        {/* when resetCount changes. This replays the intro animation. */}
+        {/* Angular equivalent: <app-game-board *ngIf="showBoard" /> with toggle. */}
         <GameBoard
-          board={gameState.board}
-          currentPlayer={gameState.currentPlayer}
-          isGameOver={gameState.isGameOver}
-          winningCells={winLine.cells}
-          winLineType={winLine.lineType}
-          onCellPress={onCellPress}
+          key={resetCount}                                           // ← NEW: changing key = new instance = animation replays.
+          board={gameState.board}                                    // The 3x3 board state.
+          currentPlayer={gameState.currentPlayer}                    // Current player.
+          isGameOver={gameState.isGameOver}                           // Whether game ended.
+          winningCells={winLine.cells}                               // Highlighted winning cells.
+          winLineType={winLine.lineType}                              // Which line won — for brush stroke.
+          onCellPress={onCellPress}                                  // Cell tap handler.
         />
 
         {/* ── QUESTION MODAL ────────────────────────────── */}
         <QuestionModal
-          isVisible={turnState.isModalVisible}
-          question={turnState.currentQuestion}
-          isWrongAnswer={turnState.isWrongAnswer}
-          isAlreadyUsed={turnState.isAlreadyUsed}
-          onSubmit={onAnswerSubmit}
-          onClose={onModalClose}
+          isVisible={turnState.isModalVisible}                       // Controls modal visibility.
+          question={turnState.currentQuestion}                       // The question for the selected cell.
+          isWrongAnswer={turnState.isWrongAnswer}                    // Triggers shake animation.
+          isAlreadyUsed={turnState.isAlreadyUsed}                    // Shows "already used" message.
+          onSubmit={onAnswerSubmit}                                  // Answer submission handler.
+          onClose={onModalClose}                                     // Modal close handler.
         />
 
       </View>

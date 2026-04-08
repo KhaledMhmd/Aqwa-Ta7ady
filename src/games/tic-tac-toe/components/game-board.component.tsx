@@ -3,11 +3,43 @@
 // ============================================================
 // game-board.component.tsx
 // Full 3x3 grid with club badge headers.
+// FotMob-style staggered intro animation on mount.
 // Draws an animated brush stroke line across winning cells.
 // Uses react-native-svg for the hand-drawn stroke effect.
 // Uses useWindowDimensions() for reliable sizing.
-// Angular equivalent: GameBoardComponent with @Input() and @Output().
+// Angular equivalent: GameBoardComponent with @Input(), @Output(),
+// and a trigger('boardIntro') animation using query + stagger.
 // ============================================================
+
+// ┌─────────────────────────────────────────────────────────────┐
+// │ ANGULAR EQUIVALENT — Component Animation Metadata           │
+// │                                                             │
+// │ @Component({                                                │
+// │   animations: [                                             │
+// │     trigger('boardIntro', [                                 │
+// │       transition(':enter', [                                │
+// │         query('.col-header', [                              │
+// │           style({ opacity: 0, transform: 'translateY(-20)' }),
+// │           stagger(100, animate('350ms ease-out',            │
+// │             style({ opacity: 1, transform: 'none' }))),     │
+// │         ]),                                                  │
+// │         query('.row-header', [                              │
+// │           style({ opacity: 0, transform: 'translateX(-20)' }),
+// │           stagger(100, animate('350ms ease-out',            │
+// │             style({ opacity: 1, transform: 'none' }))),     │
+// │         ]),                                                  │
+// │         query('.grid-cell', [                               │
+// │           style({ opacity: 0, transform: 'scale(0.3)' }),   │
+// │           stagger(60, animate('400ms cubic-bezier(          │
+// │             0.175, 0.885, 0.32, 1.275)',                    │
+// │             style({ opacity: 1, transform: 'scale(1)' }))),│
+// │         ]),                                                  │
+// │       ]),                                                    │
+// │     ]),                                                      │
+// │   ],                                                         │
+// │ })                                                           │
+// │ export class GameBoardComponent implements OnInit { ... }    │
+// └─────────────────────────────────────────────────────────────┘
 
 import React, { useEffect, useRef } from 'react';                   // React core + hooks for animation.
 import {
@@ -39,7 +71,18 @@ type WinLineType =
   | 'diag-main' | 'diag-anti'
   | null;
 
+// ── INTRO ANIMATION TIMING CONSTANTS ───────────────────
+// Controls the FotMob-style stagger animation on mount.
+// All values in milliseconds. Tweak to speed up or slow down.
+const ANIM_INITIAL_DELAY = 200;       // Pause before anything starts — lets screen settle.
+const ANIM_COL_STAGGER = 100;         // Delay between each column header appearing.
+const ANIM_COL_DURATION = 350;        // How long each column header takes to appear.
+const ANIM_ROW_STAGGER = 100;         // Delay between each row header appearing.
+const ANIM_ROW_DURATION = 350;        // How long each row header takes to appear.
+const ANIM_CELL_STAGGER = 60;         // Delay between each cell appearing — fast cascade.
+
 // Props type — what GameScreen passes in.
+// Angular equivalent: @Input() decorators.
 type Props = {
   board: CellState[][];                                              // 3x3 board state.
   currentPlayer: Player;                                             // Whose turn it is.
@@ -69,6 +112,83 @@ export const GameBoard = ({
   // Badge image size — 50% of cell, capped at 40.
   const badgeSize = Math.min(cellSize * 0.5, 40);
 
+  // ── INTRO ANIMATION VALUES ─────────────────────────────
+  // Each header and cell gets its own Animated.Value (0 → 1).
+  // useRef ensures these persist across re-renders — created once.
+  // Angular equivalent: animation state variables on the component class.
+
+  // Column header animations — one per column (3 total).
+  const colHeaderAnims = useRef(
+    COL_HEADERS.map(() => new Animated.Value(0))                     // [Value(0), Value(0), Value(0)] — all start invisible.
+  ).current;
+
+  // Row header animations — one per row (3 total).
+  const rowHeaderAnims = useRef(
+    ROW_HEADERS.map(() => new Animated.Value(0))                     // Same pattern — one per row.
+  ).current;
+
+  // Cell animations — one per cell in the 3x3 grid (9 total), flat array.
+  // Index mapping: cell[row][col] → flatIndex = row * gridSize + col.
+  const cellAnims = useRef(
+    Array.from(
+      { length: TTT_CONFIG.gridSize * TTT_CONFIG.gridSize },         // 9 slots.
+      () => new Animated.Value(0)                                    // Each starts at 0 (invisible).
+    )
+  ).current;
+
+  // ── INTRO ANIMATION SEQUENCE ─────────────────────────────
+  // Runs once on mount. Plays the full FotMob-style reveal:
+  // 1. Column headers slide down from top (staggered left→right)
+  // 2. Row headers slide in from left (staggered top→bottom)
+  // 3. Grid cells scale+fade in cascade (top-left→bottom-right)
+  // Angular equivalent: ngOnInit() with trigger('boardIntro').
+  useEffect(() => {
+    // Step 1: Column headers — opacity 0→1, translateY -20→0.
+    const colSequence = Animated.stagger(
+      ANIM_COL_STAGGER,                                              // 100ms between each.
+      colHeaderAnims.map((anim) =>
+        Animated.timing(anim, {
+          toValue: 1,                                                // Animate 0 → 1.
+          duration: ANIM_COL_DURATION,                               // 350ms each.
+          useNativeDriver: true,                                     // Native thread for 60fps.
+        })
+      )
+    );
+
+    // Step 2: Row headers — opacity 0→1, translateX -20→0.
+    const rowSequence = Animated.stagger(
+      ANIM_ROW_STAGGER,                                              // 100ms between each.
+      rowHeaderAnims.map((anim) =>
+        Animated.timing(anim, {
+          toValue: 1,                                                // Animate 0 → 1.
+          duration: ANIM_ROW_DURATION,                               // 350ms each.
+          useNativeDriver: true,                                     // Native thread.
+        })
+      )
+    );
+
+    // Step 3: Cells — opacity 0→1, scale 0.3→1 with spring bounce.
+    const cellSequence = Animated.stagger(
+      ANIM_CELL_STAGGER,                                             // 60ms between each — fast cascade.
+      cellAnims.map((anim) =>
+        Animated.spring(anim, {
+          toValue: 1,                                                // Animate 0 → 1.
+          tension: 120,                                              // Snappy spring — gives the "pop" feel.
+          friction: 8,                                               // Subtle bounce — not rubbery.
+          useNativeDriver: true,                                     // Native thread.
+        })
+      )
+    );
+
+    // Chain all three steps with initial delay.
+    Animated.sequence([
+      Animated.delay(ANIM_INITIAL_DELAY),                            // 200ms pause.
+      colSequence,                                                   // Columns fly in.
+      rowSequence,                                                   // Rows slide in.
+      cellSequence,                                                  // Cells pop in.
+    ]).start();
+  }, []);                                                            // Empty deps = mount only.
+
   // ── BRUSH STROKE ANIMATION ───────────────────────────
   // Drives strokeDashoffset from full length (hidden) to 0 (fully drawn).
   // Creates a "someone is drawing a line" effect.
@@ -91,133 +211,94 @@ export const GameBoard = ({
     winningCells.some(([r, c]) => r === row && c === col);
 
   // ── WIN LINE COORDINATES ─────────────────────────────
-  // Returns pixel start/end points for the brush stroke line
-  // based on which of the 8 possible lines won.
-  // All X positions are offset by ROW_HEADER_WIDTH so the line
-  // sits over the cells, not over the row badges.
+  // Returns pixel start/end points for the brush stroke line.
   const getWinLineCoords = (): { x1: number; y1: number; x2: number; y2: number } | null => {
     if (!winLineType) return null;
 
     const halfCell = cellSize / 2;                                   // Center of a cell.
-    const overshoot = cellSize * 0.2;                                // Line extends slightly past the grid.
+    const overshoot = 0;                                // Line extends slightly past the grid.
 
     switch (winLineType) {
-      // ── HORIZONTAL — line goes left to right through the row ──
-      case 'row-0': return {                                         // Top row.
-        x1: ROW_HEADER_WIDTH - overshoot,
-        y1: halfCell,
-        x2: ROW_HEADER_WIDTH + (cellSize * 3) + overshoot,
-        y2: halfCell,
+      case 'row-0': return {
+        x1: ROW_HEADER_WIDTH - overshoot, y1: halfCell,
+        x2: ROW_HEADER_WIDTH + (cellSize * 3) + overshoot, y2: halfCell,
       };
-      case 'row-1': return {                                         // Middle row.
-        x1: ROW_HEADER_WIDTH - overshoot,
-        y1: cellSize + halfCell,
-        x2: ROW_HEADER_WIDTH + (cellSize * 3) + overshoot,
-        y2: cellSize + halfCell,
+      case 'row-1': return {
+        x1: ROW_HEADER_WIDTH - overshoot, y1: cellSize + halfCell,
+        x2: ROW_HEADER_WIDTH + (cellSize * 3) + overshoot, y2: cellSize + halfCell,
       };
-      case 'row-2': return {                                         // Bottom row.
-        x1: ROW_HEADER_WIDTH - overshoot,
-        y1: (cellSize * 2) + halfCell,
-        x2: ROW_HEADER_WIDTH + (cellSize * 3) + overshoot,
-        y2: (cellSize * 2) + halfCell,
+      case 'row-2': return {
+        x1: ROW_HEADER_WIDTH - overshoot, y1: (cellSize * 2) + halfCell,
+        x2: ROW_HEADER_WIDTH + (cellSize * 3) + overshoot, y2: (cellSize * 2) + halfCell,
       };
-
-      // ── VERTICAL — line goes top to bottom through the column ──
-      case 'col-0': return {                                         // Left column.
-        x1: ROW_HEADER_WIDTH + halfCell,
-        y1: -overshoot,
-        x2: ROW_HEADER_WIDTH + halfCell,
-        y2: (cellSize * 3) + overshoot,
+      case 'col-0': return {
+        x1: ROW_HEADER_WIDTH + halfCell, y1: -overshoot,
+        x2: ROW_HEADER_WIDTH + halfCell, y2: (cellSize * 3) + overshoot,
       };
-      case 'col-1': return {                                         // Center column.
-        x1: ROW_HEADER_WIDTH + cellSize + halfCell,
-        y1: -overshoot,
-        x2: ROW_HEADER_WIDTH + cellSize + halfCell,
-        y2: (cellSize * 3) + overshoot,
+      case 'col-1': return {
+        x1: ROW_HEADER_WIDTH + cellSize + halfCell, y1: -overshoot,
+        x2: ROW_HEADER_WIDTH + cellSize + halfCell, y2: (cellSize * 3) + overshoot,
       };
-      case 'col-2': return {                                         // Right column.
-        x1: ROW_HEADER_WIDTH + (cellSize * 2) + halfCell,
-        y1: -overshoot,
-        x2: ROW_HEADER_WIDTH + (cellSize * 2) + halfCell,
-        y2: (cellSize * 3) + overshoot,
+      case 'col-2': return {
+        x1: ROW_HEADER_WIDTH + (cellSize * 2) + halfCell, y1: -overshoot,
+        x2: ROW_HEADER_WIDTH + (cellSize * 2) + halfCell, y2: (cellSize * 3) + overshoot,
       };
-
-      // ── DIAGONAL — line goes corner to corner ──
+      // Diagonals use halfCell offset instead of overshoot — they're already
+      // longer than rows/columns so less extension is needed to look right.
       case 'diag-main': return {                                     // Top-left → bottom-right ↘.
-        x1: ROW_HEADER_WIDTH - overshoot,
-        y1: -overshoot,
-        x2: ROW_HEADER_WIDTH + (cellSize * 3) + overshoot,
-        y2: (cellSize * 3) + overshoot,
+        x1: ROW_HEADER_WIDTH + halfCell * 0.3,                      // Start just inside top-left cell center.
+        y1: halfCell * 0.3,                                          // Slight inset from top edge.
+        x2: ROW_HEADER_WIDTH + (cellSize * 3) - halfCell * 0.3,     // End just inside bottom-right cell center.
+        y2: (cellSize * 3) - halfCell * 0.3,                         // Slight inset from bottom edge.
       };
       case 'diag-anti': return {                                     // Top-right → bottom-left ↙.
-        x1: ROW_HEADER_WIDTH + (cellSize * 3) + overshoot,
-        y1: -overshoot,
-        x2: ROW_HEADER_WIDTH - overshoot,
-        y2: (cellSize * 3) + overshoot,
+        x1: ROW_HEADER_WIDTH + (cellSize * 3) - halfCell * 0.3,     // Start just inside top-right cell center.
+        y1: halfCell * 0.3,                                          // Slight inset from top edge.
+        x2: ROW_HEADER_WIDTH + halfCell * 0.3,                      // End just inside bottom-left cell center.
+        y2: (cellSize * 3) - halfCell * 0.3,                         // Slight inset from bottom edge.
       };
-
       default: return null;
     }
   };
 
   // ── BRUSH PATH BUILDER ───────────────────────────────
   // Creates an SVG cubic Bezier path that looks hand-drawn.
-  // Instead of a straight line, it wobbles slightly using
-  // control points offset perpendicular to the line direction.
-  // This gives it an organic, brush-stroke feel.
   const buildBrushPath = (x1: number, y1: number, x2: number, y2: number): string => {
-    const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);     // Line length.
-    const wobble = length * 0.03;                                    // Wobble amount — 3% of length.
-
-    // Direction vector of the line, normalised.
+    const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    const wobble = Math.min(length * 0.02, 8); 
     const dx = (x2 - x1) / length;
     const dy = (y2 - y1) / length;
-
-    // Perpendicular vector — rotated 90° for offsetting control points.
     const px = -dy;
     const py = dx;
-
-    // Control point 1 — 1/3 along the line, offset up by wobble.
     const cp1x = x1 + (x2 - x1) * 0.33 + px * wobble;
     const cp1y = y1 + (y2 - y1) * 0.33 + py * wobble;
-
-    // Control point 2 — 2/3 along the line, offset down by wobble.
     const cp2x = x1 + (x2 - x1) * 0.66 - px * wobble * 0.7;
     const cp2y = y1 + (y2 - y1) * 0.66 - py * wobble * 0.7;
-
-    // SVG cubic Bezier: M = move to start, C = curve to end via control points.
     return `M ${x1} ${y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`;
   };
 
   // ── RENDER THE WIN LINE SVG ──────────────────────────
-  // Returns the SVG brush stroke overlay or null if no winner.
   const renderWinLine = () => {
-    if (!winLineType) return null;                                   // No winner — no line.
+    if (!winLineType) return null;
 
     const coords = getWinLineCoords();
     if (!coords) return null;
 
-    // Build the wobbly Bezier path from start to end.
     const path = buildBrushPath(coords.x1, coords.y1, coords.x2, coords.y2);
-
-    // Approximate path length for the dash animation.
     const pathLength = Math.sqrt(
       (coords.x2 - coords.x1) ** 2 + (coords.y2 - coords.y1) ** 2
-    ) * 1.1;                                                         // 10% extra for the curve.
+    ) * 1.1;
 
-    // strokeDashoffset: pathLength (hidden) → 0 (drawn).
     const dashOffset = lineAnim.interpolate({
       inputRange: [0, 1],
       outputRange: [0, pathLength],
     });
 
-    // Opacity fades in during the drawing.
     const opacity = lineAnim.interpolate({
       inputRange: [0, 0.7, 1],
       outputRange: [1, 0.6, 0],
     });
 
-    // SVG canvas size — covers the full grid plus overshoot.
     const svgWidth = ROW_HEADER_WIDTH + (cellSize * 3) + (cellSize * 0.5);
     const svgHeight = (cellSize * 3) + (cellSize * 0.5);
 
@@ -231,44 +312,39 @@ export const GameBoard = ({
         }}
       >
         <Svg width={svgWidth} height={svgHeight}>
-
-          {/* Layer 1: Glow — thick, semi-transparent background stroke. */}
-          {/* Creates a soft halo behind the main line for depth. */}
+          {/* Layer 1: Glow */}
           <AnimatedPath
             d={path}
-            stroke={colors.tertiary}                                 // Tertiary colour (cyan).
-            strokeWidth={16}                                         // Thick glow.
-            strokeLinecap="round"                                    // Rounded ends like a real brush.
-            fill="none"
-            opacity={0.2}                                            // Very subtle glow.
-            strokeDasharray={`${pathLength}`}                        // Full length as one dash.
-            strokeDashoffset={dashOffset}                            // Animated: hidden → drawn.
-          />
-
-          {/* Layer 2: Main stroke — the primary visible brush line. */}
-          <AnimatedPath
-            d={path}
-            stroke={colors.tertiary}                                 // Tertiary colour.
-            strokeWidth={7}                                          // Medium thickness.
-            strokeLinecap="round"                                    // Rounded brush ends.
-            fill="none"
-            opacity={0.85}                                           // Slightly translucent for painted feel.
-            strokeDasharray={`${pathLength}`}
-            strokeDashoffset={dashOffset}
-          />
-
-          {/* Layer 3: Highlight — thin bright center line for depth. */}
-          <AnimatedPath
-            d={path}
-            stroke="#FFFFFF"                                          // White highlight.
-            strokeWidth={2}                                          // Very thin.
+            stroke={colors.tertiary}
+            strokeWidth={16}
             strokeLinecap="round"
             fill="none"
-            opacity={0.2}                                            // Very subtle.
+            opacity={0.2}
             strokeDasharray={`${pathLength}`}
             strokeDashoffset={dashOffset}
           />
-
+          {/* Layer 2: Main stroke */}
+          <AnimatedPath
+            d={path}
+            stroke={colors.tertiary}
+            strokeWidth={7}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.85}
+            strokeDasharray={`${pathLength}`}
+            strokeDashoffset={dashOffset}
+          />
+          {/* Layer 3: Highlight */}
+          <AnimatedPath
+            d={path}
+            stroke="#FFFFFF"
+            strokeWidth={2}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.2}
+            strokeDasharray={`${pathLength}`}
+            strokeDashoffset={dashOffset}
+          />
         </Svg>
       </Animated.View>
     );
@@ -277,50 +353,101 @@ export const GameBoard = ({
   return (
     <View style={styles.container}>
 
-      {/* ── TOP HEADER ROW — empty corner + column badges ── */}
+      {/* ── TOP HEADER ROW — empty corner + animated column badges ── */}
       <View style={styles.row}>
+        {/* Empty spacer matching row header width */}
         <View style={{ width: ROW_HEADER_WIDTH }} />
-        {COL_HEADERS.map((header) => (
-          <View key={header.id} style={[styles.colHeader, { width: cellSize }]}>
+
+        {/* Column headers — each wrapped in Animated.View for fly-in effect. */}
+        {COL_HEADERS.map((header, index) => (
+          <Animated.View
+            key={header.id}                                          // Unique key — same as Angular's trackBy.
+            style={[
+              styles.colHeader,                                      // Base styling — centering + padding.
+              { width: cellSize },                                   // Dynamic size matching cells.
+              {
+                opacity: colHeaderAnims[index],                      // Fades from 0 to 1.
+                transform: [{
+                  translateY: colHeaderAnims[index].interpolate({
+                    inputRange: [0, 1],                              // Maps 0→1 to -20→0.
+                    outputRange: [-20, 0],                           // Starts 20dp above, ends at natural position.
+                  }),
+                }],
+              },
+            ]}
+          >
             <Image
-              source={{ uri: header.image }}
+              source={{ uri: header.image }}                         // Club badge URL.
               style={{ width: badgeSize, height: badgeSize }}
               resizeMode="contain"
             />
             <AppText variant="label" style={[styles.headerLabel, { color: colors.textSecondary }] as any}>
               {header.label}
             </AppText>
-          </View>
+          </Animated.View>
         ))}
       </View>
 
       {/* ── GRID ROWS + WIN LINE OVERLAY ── */}
-      {/* gridContainer has position: relative so the SVG overlays correctly. */}
       <View style={styles.gridContainer}>
 
-        {/* The 3x3 grid of cells with row headers */}
+        {/* The 3x3 grid of cells with animated row headers */}
         {board.map((row, rowIndex) => (
           <View key={rowIndex} style={styles.row}>
-            <View style={[styles.rowHeader, { width: ROW_HEADER_WIDTH }]}>
+
+            {/* Row header — animates in from the left. */}
+            <Animated.View
+              style={[
+                styles.rowHeader,                                    // Base styling.
+                { width: ROW_HEADER_WIDTH },                         // Fixed width.
+                {
+                  opacity: rowHeaderAnims[rowIndex],                 // Fades from 0 to 1.
+                  transform: [{
+                    translateX: rowHeaderAnims[rowIndex].interpolate({
+                      inputRange: [0, 1],                            // Maps 0→1 to -20→0.
+                      outputRange: [-20, 0],                         // Starts 20dp left, ends at natural position.
+                    }),
+                  }],
+                },
+              ]}
+            >
               <Image
-                source={{ uri: ROW_HEADERS[rowIndex].image }}
+                source={{ uri: ROW_HEADERS[rowIndex].image }}        // Club badge URL.
                 style={{ width: badgeSize, height: badgeSize }}
                 resizeMode="contain"
               />
               <AppText variant="label" style={[styles.headerLabel, { color: colors.textSecondary }] as any}>
                 {ROW_HEADERS[rowIndex].label}
               </AppText>
-            </View>
-            {row.map((cellState, colIndex) => (
-              <GameCell
-                key={colIndex}
-                cellState={cellState}
-                cellSize={cellSize}
-                onPress={() => onCellPress(rowIndex, colIndex)}
-                isGameOver={isGameOver}
-                isWinningCell={isWinningCell(rowIndex, colIndex)}
-              />
-            ))}
+            </Animated.View>
+
+            {/* Grid cells — each wrapped in Animated.View for scale+fade cascade. */}
+            {row.map((cellState, colIndex) => {
+              const flatIndex = rowIndex * TTT_CONFIG.gridSize + colIndex; // Row 0 Col 0 → 0, Row 2 Col 2 → 8.
+
+              return (
+                <Animated.View
+                  key={colIndex}                                     // Unique key per cell.
+                  style={{
+                    opacity: cellAnims[flatIndex],                   // Fades from 0 to 1.
+                    transform: [{
+                      scale: cellAnims[flatIndex].interpolate({
+                        inputRange: [0, 1],                          // Maps 0→1 to 0.3→1.
+                        outputRange: [0.3, 1],                       // Starts at 30% size, pops to 100%.
+                      }),
+                    }],
+                  }}
+                >
+                  <GameCell
+                    cellState={cellState}                            // Cell state — who owns it.
+                    cellSize={cellSize}                               // Width + height from GameBoard.
+                    onPress={() => onCellPress(rowIndex, colIndex)}   // Tap handler.
+                    isGameOver={isGameOver}                           // Disables press when game ended.
+                    isWinningCell={isWinningCell(rowIndex, colIndex)} // Highlights winning cells.
+                  />
+                </Animated.View>
+              );
+            })}
           </View>
         ))}
 
@@ -338,10 +465,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',                              // Center grid horizontally.
     paddingHorizontal: THEME.spacing.md,               // 16 — side padding.
   },
-  // Wrapper around the cell rows — needed for position: relative
-  // so the SVG overlay can be positioned absolutely on top.
+  // Wrapper around the cell rows — position: relative for SVG overlay.
   gridContainer: {
-    position: 'relative',                              // Enables absolute positioning for the SVG.
+    position: 'relative',                              // Enables absolute positioning for SVG.
   },
   // One row — header + cells side by side.
   row: {
