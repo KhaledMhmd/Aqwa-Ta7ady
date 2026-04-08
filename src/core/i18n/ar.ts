@@ -2,6 +2,8 @@
 // ar.ts
 // Arabic translations for the entire app.
 // Default language — app launches in Arabic.
+// All strings here are placeholder translations —
+// replace with your preferred Arabic phrasing.
 // Angular equivalent: ar.json in a translations folder.
 // ============================================================
 
@@ -29,7 +31,6 @@ export const ar: Translations = {
     nameRequired: 'أدخل اسمك',
     nameRequiredMessage: 'من فضلك أدخل اسمك للمتابعة.',
     orDivider: '— أو —',
-    languageLabel: 'اللغة',   // NEW — label above flag switcher.
   },
 
   home: {
@@ -42,15 +43,15 @@ export const ar: Translations = {
   },
 
   gameSelect: {
-    title: 'اختر لعبة',
-    comingSoonGame: 'هذه اللعبة ستكون متاحة قريباً.',
-    gridChallenge: 'اكس أوه',
-    gridChallengeDesc: 'اذكر لاعب لعب في النادين',
-    snakesAndLadders: 'السلم و التعبان',
-    snakesAndLaddersDesc: 'اطلع السلم واحذر من التعبان',
-    hangman: 'خمن اللعيب',
-    hangmanDesc: 'خمن اللاعب قبل ما الوقت يخلص',
-  },
+  title: 'اختر لعبة',
+  comingSoonGame: 'هذه اللعبة ستكون متاحة قريباً.',
+  gridChallenge: 'اكس أوه',
+  gridChallengeDesc: 'اذكر لاعب لعب في النادين',
+  snakesAndLadders: 'السلم و التعبان',
+  snakesAndLaddersDesc: 'اطلع السلم واحذر من التعبان',
+  hangman: 'خمن اللعيب',
+  hangmanDesc: 'خمن اللاعب قبل ما الوقت يخلص',
+},
 
   game: {
     yourTurn: 'دورك',
@@ -63,7 +64,7 @@ export const ar: Translations = {
     submit: 'إرسال',
     wrongAnswer: 'إجابة خاطئة — الدور ينتقل!',
     alreadyUsed: 'هذا اللاعب تم استخدامه في خلية أخرى — الدور ينتقل!',
-    placeholder: 'اكتب اسم اللاعب...',
+        placeholder: 'اكتب اسم اللاعب...',
   },
 
   settings: {
@@ -99,19 +100,19 @@ export const ar: Translations = {
     pointsMessage: 'لم يكتمل أي صف. الفائز بعدد الخلايا.',
     finalScore: 'النتيجة النهائية:',
     cells: 'خلايا',
-    playAgain: 'العب مرة أخرى',
+    playAgain: 'العب مجدداً',
     home: 'الرئيسية',
   },
 
   modeSelect: {
-    title: 'اختر الصعوبة',
-    easy: 'سهل',
-    medium: 'متوسط',
-    hard: 'صعب',
-    vsBot: 'ضد البوت',
-    vsFriend: 'ضد صديق',
-    difficultyTitle: 'اختر مستوى الصعوبة',
-  },
+  title: 'اختر المستوى',
+  easy: 'سهل',
+  medium: 'متوسط',
+  hard: 'صعب',
+  vsBot: 'ضد الكمبيوتر',
+  vsFriend: 'ضد صديق',
+  difficultyTitle: 'اختر المستوى',
+},
 
   leaderboard: {
     title: 'المتصدرون',
