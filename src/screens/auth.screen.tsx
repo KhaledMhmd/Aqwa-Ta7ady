@@ -7,7 +7,11 @@
 // ============================================================
 
 import React, { useCallback, useState } from 'react';
-import { View, StyleSheet, TextInput, Alert, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TextInput, Alert, Image, Dimensions, TouchableOpacity,KeyboardAvoidingView,    // NEW — pushes content above keyboard.
+  Keyboard,                // NEW — programmatic keyboard dismiss.
+  Platform,                // NEW — iOS vs Android detection.
+  TouchableWithoutFeedback, // NEW — tap outside to dismiss keyboard.
+   } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/app.navigator';

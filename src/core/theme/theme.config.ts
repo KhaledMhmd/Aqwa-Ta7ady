@@ -46,10 +46,10 @@ type ColorPalette = {
   error: string;         // Wrong answer, destructive actions.
   warning: string;       // Caution states, time running low.
   disabled: string;      // Disabled buttons and inactive elements.
-
-  // Border colours
-  border: string;        // Default border — subtle separator.
-  borderLight: string;   // Lighter border — very subtle separator.
+// Border colours
+  border: string;
+  borderLight: string;
+  focusBorder: string;   // ADD THIS LINE
 
   // Overlay colours
   modalOverlay: string;  // Semi-transparent overlay behind modals.
@@ -88,9 +88,10 @@ export const DARK_THEME: ColorPalette = {
   warning: '#FFB84D',      // Amber/orange — caution states, time running low.
   disabled: '#2A2A44',     // Very dark muted purple — disabled state.
 
-  // Borders.
-  border: '#252540',       // Subtle dark border — matches surfaceLight.
-  borderLight: '#1E1E36',  // Very subtle border — barely visible separator.
+// Borders.
+  border: '#252540',
+  borderLight: '#1E1E36',
+  focusBorder: '#8B83FF',  // ADD THIS LINE — lighter purple glow for focus states.
 
   // Overlays.
   modalOverlay: 'rgba(0,0,0,0.75)',     // Dark overlay behind modals.
@@ -129,9 +130,10 @@ export const LIGHT_THEME: ColorPalette = {
   warning: '#E6A040',      // Darker amber — readable on light backgrounds.
   disabled: '#C8C8D8',     // Light muted purple-grey — disabled on light bg.
 
-  // Borders.
-  border: '#D0D0DE',       // Subtle light border.
-  borderLight: '#DCDCE8',  // Very subtle border.
+// Borders.
+  border: '#D0D0DE',
+  borderLight: '#DCDCE8',
+  focusBorder: '#6C63FF',  // ADD THIS LINE — primary purple, pops on light backgrounds.
 
   // Overlays.
   modalOverlay: 'rgba(0,0,0,0.5)',       // Lighter overlay on light bg.

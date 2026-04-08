@@ -36,6 +36,7 @@ import { THEME } from '../../../core/theme/theme.config';                      /
 import { TTT_CONFIG } from '../config/game.config';                            // Game config.
 import { useTheme } from '../../../core/theme/theme.context';                  // Dynamic colours.
 import { useLanguage } from '../../../core/i18n/language.context';             // Translations.
+import { AppBackButton } from '../../../core/components/app-back-button.component';
 
 // WinLineType — identifies which of the 8 possible lines won.
 // Used by GameBoard to position the brush stroke overlay.
@@ -164,12 +165,7 @@ export const GameScreen = () => {
 
         {/* ── HEADER ────────────────────────────────────── */}
         <View style={[styles.header, { direction: 'ltr' }]}>
-          <AppButton
-            label={t.common.back}                                    // Translated "Back" text.
-            onPress={() => navigation.goBack()}                      // Go to previous screen.
-            variant="ghost"                                          // Ghost = no background.
-            style={styles.backButton}
-          />
+          <AppBackButton onPress={() => navigation.goBack()} />
           <AppText variant="h3" style={{ color: colors.primary }}>
             {TTT_CONFIG.name}
           </AppText>
