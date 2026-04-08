@@ -33,6 +33,7 @@ export type Translations = {
     nameRequired: string;   // Validation alert title.
     nameRequiredMessage: string; // Validation alert body.
     orDivider: string;      // '— or —' divider text.
+    languageLabel: string;  // NEW — 'Language' label above flag switcher.
   };
 
   // ── HOME SCREEN ─────────────────────────────────────────
@@ -47,29 +48,29 @@ export type Translations = {
 
   // ── GAME SELECT SCREEN ──────────────────────────────────
   gameSelect: {
-  title: string;                    // 'Choose a Game'
-  comingSoonGame: string;           // Coming Soon alert message.
-  gridChallenge: string;            // Game title — 'Grid Challenge'.
-  gridChallengeDesc: string;        // Game description for the card.
-  snakesAndLadders: string;         // Game title — 'Snakes & Ladders'.
-  snakesAndLaddersDesc: string;     // Game description for the card.
-  hangman: string;                  // Game title — 'Hangman'.
-  hangmanDesc: string;              // Game description for the card.
-};
+    title: string;
+    comingSoonGame: string;
+    gridChallenge: string;
+    gridChallengeDesc: string;
+    snakesAndLadders: string;
+    snakesAndLaddersDesc: string;
+    hangman: string;
+    hangmanDesc: string;
+  };
 
   // ── GAME SCREEN ─────────────────────────────────────────
   game: {
-    yourTurn: string;       // Shown under active player.
-    thinking: string;       // Shown under bot when it is thinking.
-    vsLabel: string;        // 'VS' between player cards.
-    endLabel: string;       // 'END' when game is over.
-    nameAPlayer: string;    // Modal prompt — 'Name a player who played for both'
-    andConnector: string;   // '&' between club names in modal.
-    skip: string;           // Skip button in modal.
-    submit: string;         // Submit button in modal.
-    wrongAnswer: string;    // Wrong answer feedback message.
-    alreadyUsed: string;    // Already used feedback message.
-    placeholder: string;    // Input placeholder in modal.
+    yourTurn: string;
+    thinking: string;
+    vsLabel: string;
+    endLabel: string;
+    nameAPlayer: string;
+    andConnector: string;
+    skip: string;
+    submit: string;
+    wrongAnswer: string;
+    alreadyUsed: string;
+    placeholder: string;
   };
 
   // ── SETTINGS SCREEN ─────────────────────────────────────
@@ -102,26 +103,26 @@ export type Translations = {
 
   // ── RESULT ──────────────────────────────────────────────
   result: {
-    winsLine: string;       // '{name} Wins!' — line win title.
-    winsPoints: string;     // '{name} Wins on Points!' — cell count win title.
-    lineMessage: string;    // '{name} got 3 in a row!'
-    pointsMessage: string;  // 'No line completed. Winner by cell count.'
-    finalScore: string;     // 'Final score:'
-    cells: string;          // 'cells'
+    winsLine: string;
+    winsPoints: string;
+    lineMessage: string;
+    pointsMessage: string;
+    finalScore: string;
+    cells: string;
     playAgain: string;
     home: string;
   };
 
-  // ── MODE SELECT ─────────────────────────────────────────────
-modeSelect: {
-  title: string;          // 'Choose Difficulty'
-  easy: string;
-  medium: string;
-  hard: string;
-  vsBot: string;          // 'vs Bot'
-  vsFriend: string;       // 'vs Friend' — Coming Soon
-  difficultyTitle: string;  // 'Select Difficulty'
-};
+  // ── MODE SELECT ─────────────────────────────────────────
+  modeSelect: {
+    title: string;
+    easy: string;
+    medium: string;
+    hard: string;
+    vsBot: string;
+    vsFriend: string;
+    difficultyTitle: string;
+  };
 
   // ── LEADERBOARD + SHOP PLACEHOLDERS ─────────────────────
   leaderboard: {

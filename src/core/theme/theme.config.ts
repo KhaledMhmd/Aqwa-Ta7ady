@@ -9,11 +9,17 @@
 // Secondary: #FF59D6 (hot pink)
 // Tertiary: #2CCBFF (cyan/sky blue)
 // Neutral: #F8F9FA (near-white)
-// Fonts: Plus Jakarta Sans (headlines), Be Vietnam Pro (body/labels)
+// Fonts: Poppins (English headlines/body), Cairo (Arabic), Bungee (accent)
 // To update colours — edit DARK_THEME or LIGHT_THEME only.
 // Nothing else in the codebase needs to change.
 // Angular equivalent: SCSS variables file with theme maps.
 // ============================================================
+
+// ── Angular equivalent ────────────────────────────────
+// In Angular you'd have a SCSS variables file:
+// $primary: #6C63FF;
+// $focus-border: #8B83FF;
+// And a ThemeService that swaps CSS custom properties.
 
 // ColorPalette defines the required shape of every theme.
 // Both DARK_THEME and LIGHT_THEME must satisfy this type.
@@ -50,6 +56,7 @@ type ColorPalette = {
   // Border colours
   border: string;        // Default border — subtle separator.
   borderLight: string;   // Lighter border — very subtle separator.
+  focusBorder: string;   // NEW — visible border when an input or flag is focused/active.
 
   // Overlay colours
   modalOverlay: string;  // Semi-transparent overlay behind modals.
@@ -91,6 +98,7 @@ export const DARK_THEME: ColorPalette = {
   // Borders.
   border: '#252540',       // Subtle dark border — matches surfaceLight.
   borderLight: '#1E1E36',  // Very subtle border — barely visible separator.
+  focusBorder: '#8B83FF',  // NEW — lighter purple glow — visible on dark backgrounds for focus states.
 
   // Overlays.
   modalOverlay: 'rgba(0,0,0,0.75)',     // Dark overlay behind modals.
@@ -132,13 +140,12 @@ export const LIGHT_THEME: ColorPalette = {
   // Borders.
   border: '#D0D0DE',       // Subtle light border.
   borderLight: '#DCDCE8',  // Very subtle border.
+  focusBorder: '#6C63FF',  // NEW — uses primary purple — pops clearly on light backgrounds.
 
   // Overlays.
   modalOverlay: 'rgba(0,0,0,0.5)',       // Lighter overlay on light bg.
   comingSoon: 'rgba(232,232,238,0.9)',    // Light overlay for locked features.
 };
-
-// ── React Native ──────────────────────────────────────
 
 // ── FONT FAMILIES ────────────────────────────────────────────
 // Loaded in index.tsx via useFonts().
@@ -203,9 +210,6 @@ export const THEME = {
   },
 
   // Font weights — mapped to actual fontFamily strings.
-  // In React Native, fontWeight and fontFamily must match.
-  // You cannot use fontWeight: '700' with a Regular font file —
-  // you must use the Bold font file instead.
   fontWeights: {
     regular: '400' as const,   // Used with *-Regular font files.
     bold: '700' as const,      // Used with *-Bold font files.

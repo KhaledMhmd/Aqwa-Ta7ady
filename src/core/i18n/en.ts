@@ -28,6 +28,7 @@ export const en: Translations = {
     nameRequired: 'Enter your name',
     nameRequiredMessage: 'Please enter a name to continue.',
     orDivider: '— or —',
+    languageLabel: 'Language',   // NEW — label above flag switcher.
   },
 
   home: {
@@ -39,17 +40,16 @@ export const en: Translations = {
     welcome: 'Welcome back,',
   },
 
-  // AFTER:
-gameSelect: {
-  title: 'Choose a Game',
-  comingSoonGame: 'This game will be available in a future update.',
-  gridChallenge: 'Grid Challenge',
-  gridChallengeDesc: 'Name a player who played for both clubs',
-  snakesAndLadders: 'Snakes & Ladders',
-  snakesAndLaddersDesc: 'Climb the pitch, dodge the red cards',
-  hangman: 'Hangman',
-  hangmanDesc: 'Guess the football legend before time runs out',
-},
+  gameSelect: {
+    title: 'Choose a Game',
+    comingSoonGame: 'This game will be available in a future update.',
+    gridChallenge: 'Grid Challenge',
+    gridChallengeDesc: 'Name a player who played for both clubs',
+    snakesAndLadders: 'Snakes & Ladders',
+    snakesAndLaddersDesc: 'Climb the pitch, dodge the red cards',
+    hangman: 'Hangman',
+    hangmanDesc: 'Guess the football legend before time runs out',
+  },
 
   game: {
     yourTurn: 'Your Turn',
@@ -103,14 +103,14 @@ gameSelect: {
   },
 
   modeSelect: {
-  title: 'Choose Difficulty',
-  easy: 'Easy',
-  medium: 'Medium',
-  hard: 'Hard',
-  vsBot: 'vs Bot',
-  vsFriend: 'vs Friend',
-  difficultyTitle: 'Select Difficulty',
-},
+    title: 'Choose Difficulty',
+    easy: 'Easy',
+    medium: 'Medium',
+    hard: 'Hard',
+    vsBot: 'vs Bot',
+    vsFriend: 'vs Friend',
+    difficultyTitle: 'Select Difficulty',
+  },
 
   leaderboard: {
     title: 'Leaderboards',
