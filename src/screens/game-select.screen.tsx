@@ -16,6 +16,7 @@ import {
   TouchableOpacity,                                                  // Pressable wrapper for game cards.
   Dimensions,                                                        // Screen dimensions for responsive sizing.
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';      // FIX — proper safe area, avoids notch/status bar cropping.
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native'; // Navigation hooks.
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';    // Nav type.
 import { RootStackParamList } from '../navigation/app.navigator';   // Route types.
@@ -24,11 +25,7 @@ import { AppButton } from '../core/components/app-button.component'; // Themed b
 import { useTheme } from '../core/theme/theme.context';             // Dynamic colours.
 import { useLanguage } from '../core/i18n/language.context';        // Translations.
 import { THEME } from '../core/theme/theme.config';                 // Static spacing.
-import { AppBackButton } from '../core/components/app-back-button.component';
-
-// ── Angular equivalent ────────────────────────────────
-// In Angular: GameSelectComponent with a shared <app-header>
-// component that takes [title] as @Input() and emits (back).
+import { AppBackButton } from '../core/components/app-back-button.component'; // Circular back button.
 
 // Navigation type for this screen.
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'GameSelect'>;
@@ -37,7 +34,6 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'GameSelect'
 type RoutePropType = RouteProp<RootStackParamList, 'GameSelect'>;
 
 // GameCardData defines the shape of each game entry.
-// Angular equivalent: a Game interface in a models folder.
 type GameCardData = {
   id: string;                                                        // Unique identifier.
   title: string;                                                     // Display name.
@@ -64,12 +60,11 @@ export const GameSelectScreen = () => {
   const { playerName, playerAvatar } = route.params;
 
   // Games array — single source of truth for all game cards.
-  // Angular equivalent: a games: Game[] array iterated with *ngFor.
   const games: GameCardData[] = [
     {
-      id: 'grid-challenge',                                          // Unique key for list rendering.
-      title: t.gameSelect.gridChallenge,                             // Translated game name.
-      description: t.gameSelect.gridChallengeDesc,                   // Translated description.
+      id: 'grid-challenge',
+      title: t.gameSelect.gridChallenge,
+      description: t.gameSelect.gridChallengeDesc,
       isAvailable: true,                                             // Phase 1 — playable.
     },
     {
@@ -87,7 +82,6 @@ export const GameSelectScreen = () => {
   ];
 
   // onGamePress handles tapping a game card.
-  // If available, navigates to mode select. If not, shows Coming Soon alert.
   const onGamePress = (game: GameCardData) => {
     if (!game.isAvailable) {
       Alert.alert(t.common.comingSoon, t.gameSelect.comingSoonGame);
@@ -97,48 +91,45 @@ export const GameSelectScreen = () => {
   };
 
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+    // FIX — SafeAreaView wraps the entire screen to prevent header cropping under status bar/notch.
+    // This was a plain <View> before which caused the back button and title to sit under the notch.
+    // Angular equivalent: no direct equivalent — browsers handle safe areas via env(safe-area-inset-top).
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
 
       {/* ── HEADER — matches game.screen.tsx pattern ───── */}
-      {/* direction: 'ltr' keeps ← on the left even in Arabic RTL mode. */}
-      {/* Angular equivalent: a shared <app-header [title]="title" (back)="goBack()">. */}
       <View style={[styles.header, { direction: 'ltr' }]}>
         <AppBackButton onPress={() => navigation.goBack()} />
         <AppText variant="h3" style={{ color: colors.primary }}>
           {t.gameSelect.title}
         </AppText>
-        {/* Empty spacer — same width as back button to center the title. */}
         <View style={styles.headerBackButton} />
       </View>
 
       {/* ── SCROLLABLE CONTENT ────────────────────────── */}
       <ScrollView
-        contentContainerStyle={styles.container}                     // Inner padding and alignment.
-        showsVerticalScrollIndicator={false}                         // Hide scrollbar.
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
       >
-
-        {/* Game cards — Angular equivalent: *ngFor="let game of games". */}
         {games.map((game) => (
           <TouchableOpacity
-            key={game.id}                                            // Unique key for React list.
-            activeOpacity={game.isAvailable ? 0.7 : 1}              // Dim on press if available.
-            onPress={() => onGamePress(game)}                        // Handle tap.
+            key={game.id}
+            activeOpacity={game.isAvailable ? 0.7 : 1}
+            onPress={() => onGamePress(game)}
             style={[
-              styles.card,                                           // Base card styles.
+              styles.card,
               {
-                backgroundColor: colors.surface,                     // Card background from theme.
-                borderColor: colors.border,                          // Subtle border from theme.
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
               },
             ]}
           >
-
             {/* Icon area — darker rectangle. */}
             <View style={[styles.iconArea, { backgroundColor: colors.background }]}>
               <View style={[styles.iconCircle, { backgroundColor: colors.surfaceLight }]}>
                 <Image
-                  source={require('../../assets/XOGameIcon.png')}    // Shared game icon.
-                  style={styles.iconImage}                           // Fills the circle.
-                  resizeMode="contain"                               // Fit without cropping.
+                  source={require('../../assets/XOGameIcon.png')}
+                  style={styles.iconImage}
+                  resizeMode="contain"
                 />
               </View>
             </View>
@@ -154,7 +145,6 @@ export const GameSelectScreen = () => {
             </View>
 
             {/* Coming Soon overlay for locked games. */}
-            {/* Angular equivalent: *ngIf="!game.isAvailable". */}
             {!game.isAvailable && (
               <View style={[styles.comingSoonOverlay, { backgroundColor: colors.comingSoon }]}>
                 <AppText variant="body" style={{
@@ -165,47 +155,45 @@ export const GameSelectScreen = () => {
                 </AppText>
               </View>
             )}
-
           </TouchableOpacity>
         ))}
-
       </ScrollView>
-    </View>
+
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  // Full screen wrapper.
+  // Full screen wrapper — now SafeAreaView.
   screen: {
-    flex: 1,                                                         // Fill all available space.
+    flex: 1,
   },
-  // ── HEADER — reusable pattern from game.screen.tsx ──
-  // Row: [back button] [centered title] [empty spacer].
+  // Header row.
   header: {
-    flexDirection: 'row',                                            // Horizontal layout.
-    alignItems: 'center',                                            // Vertically centered.
-    justifyContent: 'space-between',                                 // Spread across the row.
-    paddingHorizontal: THEME.spacing.md,                             // 16 — side padding.
-    paddingVertical: THEME.spacing.sm,                               // 8 — top/bottom padding.
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: THEME.spacing.md,
+    paddingVertical: THEME.spacing.sm,
   },
-  // Back button + spacer — same width so the title stays centered.
+  // Back button spacer.
   headerBackButton: {
-    width: 44,                                         // Matches game.screen.tsx.
+    width: 44,
   },
   // Scrollable content area.
   container: {
-    alignItems: 'center',                                            // Center cards horizontally.
-    paddingHorizontal: THEME.spacing.xl,                             // 32 — side padding.
-    paddingTop: THEME.spacing.sm,                                    // 8 — small gap below header.
-    paddingBottom: THEME.spacing.xl,                                 // 32 — bottom padding.
-    gap: THEME.spacing.md,                                           // 16 — space between cards.
+    alignItems: 'center',
+    paddingHorizontal: THEME.spacing.xl,
+    paddingTop: THEME.spacing.sm,
+    paddingBottom: THEME.spacing.xl,
+    gap: THEME.spacing.md,
   },
   // Game card.
   card: {
-    width: '100%',                                                   // Full width.
-    borderRadius: THEME.borderRadius.lg,                             // 16 — rounded corners.
-    borderWidth: 0.5,                                                // Subtle border.
-    overflow: 'hidden',                                              // Clip children to card radius.
+    width: '100%',
+    borderRadius: THEME.borderRadius.lg,
+    borderWidth: 0.5,
+    overflow: 'hidden',
   },
   // Darker inner area behind the game icon.
   iconArea: {

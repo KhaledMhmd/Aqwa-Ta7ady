@@ -9,6 +9,7 @@
 
 import React, { useState } from 'react';                            // React core + state hook.
 import { View, StyleSheet, Alert } from 'react-native';             // Layout + alert.
+import { SafeAreaView } from 'react-native-safe-area-context';      // FIX — proper safe area, avoids notch/status bar cropping.
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native'; // Navigation hooks.
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';    // Nav type.
 import { RootStackParamList } from '../../../navigation/app.navigator'; // Route types.
@@ -18,11 +19,7 @@ import { useTheme } from '../../../core/theme/theme.context';       // Dynamic c
 import { useLanguage } from '../../../core/i18n/language.context';  // Translations.
 import { THEME } from '../../../core/theme/theme.config';           // Static spacing.
 import { TTT_CONFIG } from '../config/game.config';                 // Game name.
-import { AppBackButton } from '../../../core/components/app-back-button.component';
-
-// ── Angular equivalent ────────────────────────────────
-// In Angular: ModeSelectComponent with *ngIf="selectedMode === 'vs-bot'"
-// and a shared <app-header> component.
+import { AppBackButton } from '../../../core/components/app-back-button.component'; // Circular back button.
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'TicTacToeModeSelect'>;
 type RoutePropType = RouteProp<RootStackParamList, 'TicTacToeModeSelect'>;
@@ -44,10 +41,10 @@ export const ModeSelectScreen = () => {
   // Step 1 — picking vs Bot or vs Friend.
   const onModeSelect = (mode: 'vs-bot' | 'vs-friend') => {
     if (mode === 'vs-friend') {
-      Alert.alert(t.common.comingSoon, t.common.comingSoonMessage);  // vs Friend is locked.
+      Alert.alert(t.common.comingSoon, t.common.comingSoonMessage);
       return;
     }
-    setSelectedMode(mode);                                           // Show difficulty section.
+    setSelectedMode(mode);
   };
 
   // Step 2 — picking Easy, Medium, or Hard. Navigates to game.
@@ -60,16 +57,15 @@ export const ModeSelectScreen = () => {
   };
 
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+    // FIX — SafeAreaView wraps the entire screen to prevent header cropping under status bar/notch.
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
 
       {/* ── HEADER — matches game.screen.tsx pattern ───── */}
-      {/* direction: 'ltr' keeps ← on the left even in Arabic RTL mode. */}
       <View style={[styles.header, { direction: 'ltr' }]}>
         <AppBackButton onPress={() => navigation.goBack()} />
         <AppText variant="h3" style={{ color: colors.primary }}>
           {TTT_CONFIG.name}
         </AppText>
-        {/* Empty spacer — same width as back button to center the title. */}
         <View style={styles.headerBackButton} />
       </View>
 
@@ -83,14 +79,12 @@ export const ModeSelectScreen = () => {
 
         {/* Mode buttons row. */}
         <View style={styles.modeRow}>
-          {/* vs Bot button. */}
           <AppButton
             label={t.modeSelect.vsBot}
             onPress={() => onModeSelect('vs-bot')}
             variant={selectedMode === 'vs-bot' ? 'primary' : 'secondary'}
             style={styles.modeButton}
           />
-          {/* vs Friend button — disabled, Coming Soon. */}
           <AppButton
             label={t.modeSelect.vsFriend}
             onPress={() => onModeSelect('vs-friend')}
@@ -99,8 +93,7 @@ export const ModeSelectScreen = () => {
           />
         </View>
 
-        {/* Step 2 — Difficulty selection (shown when vs Bot is selected). */}
-        {/* Angular equivalent: *ngIf="selectedMode === 'vs-bot'". */}
+        {/* Step 2 — Difficulty selection. */}
         {selectedMode === 'vs-bot' && (
           <View style={[
             styles.difficultySection,
@@ -131,44 +124,45 @@ export const ModeSelectScreen = () => {
         )}
 
       </View>
-    </View>
+
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  // Full screen wrapper.
+  // Full screen wrapper — now SafeAreaView.
   screen: {
-    flex: 1,                                                         // Fill all available space.
+    flex: 1,
   },
-  // ── HEADER — reusable pattern from game.screen.tsx ──
+  // Header row.
   header: {
-    flexDirection: 'row',                                            // Horizontal layout.
-    alignItems: 'center',                                            // Vertically centered.
-    justifyContent: 'space-between',                                 // Spread across the row.
-    paddingHorizontal: THEME.spacing.md,                             // 16 — side padding.
-    paddingVertical: THEME.spacing.sm,                               // 8 — top/bottom padding.
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: THEME.spacing.md,
+    paddingVertical: THEME.spacing.sm,
   },
-  // Back button + spacer — same width so the title stays centered.
+  // Back button spacer.
   headerBackButton: {
-    width: 44,                                            // Matches game.screen.tsx.
+    width: 44,
   },
-  // Content area — centered vertically in remaining space.
+  // Content area — centered vertically.
   content: {
-    flex: 1,                                                         // Fill remaining space below header.
-    alignItems: 'center',                                            // Center horizontally.
-    justifyContent: 'center',                                        // Center vertically.
-    paddingHorizontal: THEME.spacing.xl,                             // 32 — side padding.
-    gap: THEME.spacing.md,                                           // 16 — gap between elements.
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: THEME.spacing.xl,
+    gap: THEME.spacing.md,
   },
   // Section title spacing.
   sectionTitle: {
-    marginBottom: THEME.spacing.xs,                                  // 4 — small gap below.
+    marginBottom: THEME.spacing.xs,
   },
   // Mode buttons row.
   modeRow: {
-    flexDirection: 'row',                                            // Side by side.
-    gap: THEME.spacing.sm,                                           // 8 — gap between buttons.
-    width: '100%',                                                   // Full width.
+    flexDirection: 'row',
+    gap: THEME.spacing.sm,
+    width: '100%',
   },
   // Each mode button takes equal width.
   modeButton: {
@@ -176,11 +170,11 @@ const styles = StyleSheet.create({
   },
   // Difficulty section card.
   difficultySection: {
-    width: '100%',                                                   // Full width.
-    borderRadius: THEME.borderRadius.lg,                             // 16 — rounded corners.
-    borderWidth: 0.5,                                                // Subtle border.
-    padding: THEME.spacing.md,                                       // 16 — inner padding.
-    gap: THEME.spacing.sm,                                           // 8 — gap between buttons.
+    width: '100%',
+    borderRadius: THEME.borderRadius.lg,
+    borderWidth: 0.5,
+    padding: THEME.spacing.md,
+    gap: THEME.spacing.sm,
   },
   // Difficulty label spacing.
   difficultyLabel: {

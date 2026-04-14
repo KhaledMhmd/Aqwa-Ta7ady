@@ -9,6 +9,7 @@
 
 import React from 'react';                                          // React core.
 import { View, Switch, StyleSheet, ScrollView } from 'react-native'; // Layout + toggle + scrolling.
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';           // Navigation hook.
 import { AppText } from '../core/components/app-text.component';    // Themed text.
 import { AppButton } from '../core/components/app-button.component'; // Themed button.
@@ -32,7 +33,7 @@ export const SettingsScreen = () => {
   if (isLoading) return null;
 
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
 
       {/* ── HEADER — matches game.screen.tsx pattern ───── */}
       {/* direction: 'ltr' keeps ← on the left even in Arabic RTL mode. */}
@@ -104,7 +105,7 @@ export const SettingsScreen = () => {
         </View>
 
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
